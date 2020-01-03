@@ -70,7 +70,7 @@
                                             <table class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th class="text-center">Please Add Record or Edit button from Case Report tab</th>
+                                                        <th class="text-center">Please Add Record or click Edit button from Case Report tab</th>
                                                     </tr>
                                                 </thead>
                                             </table>
@@ -84,7 +84,7 @@
                                             <table class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th class="text-center">Please Add Record or Edit button from Case Report tab</th>
+                                                        <th class="text-center">Please Add Record or click Edit button from Case Report tab</th>
                                                     </tr>
                                                 </thead>
                                             </table>
@@ -183,6 +183,7 @@
 			},
 			success: function(res) {
 				$('#cs_rp_form_al').html(res);
+				$('#cs_rp_form_sp').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
 			}
 		});
     });
@@ -288,6 +289,8 @@
 		var asset_brand = thisBtn.data("al-brand");
 		var asset_quantity = thisBtn.data("al-quantity");
 		var asset_amt = thisBtn.data("al-icost");
+		var sid = thisBtn.data("al-sid");
+		var sname = thisBtn.data("al-sname");
 		
 		$('#asset_id').val(asset_code);
 		$('#assetType').val(asset_desc);
@@ -295,6 +298,8 @@
 		$('#brand').val(asset_brand);
 		$('#qItem').val(asset_quantity);
 		$('#amtItem').val(asset_amt);
+		$('#staff_id').val(sid);
+		$('#staff_name').val(sname);
 	});
 	///// SEARCH ASSET //////
 
@@ -371,58 +376,90 @@
 	});
 	///// SEARCH STAFF//////
 
-	// CHANGE ADMINISTRATION WARNING
-	$('#cs_rp_form_al').on('dp.change', '#awd', function () {
-		var aw_date = $(this).val();
-		var dcm_sts = $('#status').val();
-
-		if(aw_date != '') {
-			$('#status').val('CLOSED');
-		} else if(aw_date == '' && dcm_sts == 'CLOSED') {
-			$('#status').val('PRELIMINARY REPORT');
-		}
-	});
-
 	// SAVE ADD CASE REPORT ENTRY (AL)
-	$('#cs_rp_form_al').on('click', '.add_rp_afd_frm', function (e) {
+	$('#cs_rp_form_al').on('click', '.add_rp_al_frm', function (e) {
 		e.preventDefault();
-		var data = $('#addRpEntFmAFD').serialize();
-		msg.wait('#addRpEntFmAFDAlert');
-		msg.wait('#addRpEntFmAFDFooter');
+		var data = $('#addRpEntFmAL').serialize();
+		msg.wait('#addRpEntFmALAlert');
+		msg.wait('#addRpEntFmALFooter');
 		// alert(data);
 		
 		$('.btn').attr('disabled', 'disabled');
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('saveAddRpAfdFrm')?>',
+			url: '<?php echo $this->lib->class_url('saveAddRpAlFrm')?>',
 			data: data,
 			dataType: 'JSON',
 			success: function(res) {
-				msg.show(res.msg, res.alert, '#addRpEntFmAFDAlert');
-				msg.show(res.msg, res.alert, '#addRpEntFmAFDFooter');
+				msg.show(res.msg, res.alert, '#addRpEntFmALAlert');
+				msg.show(res.msg, res.alert, '#addRpEntFmALFooter');
 
 				if (res.sts == 1) {
 				
 					setTimeout(function () {
-						$('.nav-tabs li:eq(0) a').tab('show');
 						$('.btn').removeAttr('disabled');
 						
 						// REFRESH CASE REPORT
 						$('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 						$.ajax({
 							type: 'POST',
-							url: '<?php echo $this->lib->class_url('csRpEntAFD')?>',
+							url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
 							data: '',
 							success: function(res) {
 								$('#rp_ent_al').html(res);
 
-								rp_al_row = $('#tbl_rp_afd_list').DataTable({
+								rp_al_row = $('#tbl_rp_al_list').DataTable({
 									"ordering":false,
 								});
 							}
 						});	
 						
-						$('#cs_rp_form_al').html('<p><table class="table table-bordered table-hover"><thead><tr><th class="text-center">Please click Add Record or Edit button from Case Report tab</th></tr></thead></table></p>');
+						// CHANGE UPDATE FORM
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('editCaseALForm')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								$('.nav-tabs li:eq(1) a').tab('show');
+							},
+							success: function(res) {
+								$('#cs_rp_form_al').html(res);
+
+								var it_type = $('#itemType').val();
+								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								
+								if(it_type == 'MONEY' && it_type != '') {
+									$('#aForm').removeClass('hidden');
+									$('#bForm').addClass('hidden');
+								} else if (it_type != 'MONEY' && it_type != '') {
+									$('#bForm').removeClass('hidden');
+									$('#aForm').addClass('hidden');
+								} else if (it_type == '') {
+									$('#aForm').addClass('hidden');
+									$('#bForm').addClass('hidden');
+								}
+
+								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>').hide();
+							}
+						});
+
+						// SUSPECT
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('ALSuspectList')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_sp').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_sp').html(res);
+
+								rp_al_row = $('#tbl_sp_al_list').DataTable({
+									"ordering":false,
+								});
+							}
+						});
 
 					}, 1500);
 				} else {
@@ -431,8 +468,8 @@
 			},
 			error: function() {
 				$('.btn').removeAttr('disabled');
-				msg.danger('Please contact administrator.', '#addRpEntFmAFDAlert');
-				msg.danger('Please contact administrator.', '#addRpEntFmAFDFooter');
+				msg.danger('Please contact administrator.', '#addRpEntFmALAlert');
+				msg.danger('Please contact administrator.', '#addRpEntFmALFooter');
 			}
 		});	
 	});
@@ -446,7 +483,7 @@
 
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('editCaseAFDForm')?>',
+			url: '<?php echo $this->lib->class_url('editCaseALForm')?>',
 			data: {'case_id':code},
 			beforeSend: function() {
 				$('#cs_rp_form_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
@@ -454,50 +491,109 @@
 			},
 			success: function(res) {
 				$('#cs_rp_form_al').html(res);
+
+				var it_type = $('#itemType').val();
+				$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+				
+				if(it_type == 'MONEY' && it_type != '') {
+					$('#aForm').removeClass('hidden');
+					$('#bForm').addClass('hidden');
+				} else if (it_type != 'MONEY' && it_type != '') {
+					$('#bForm').removeClass('hidden');
+					$('#aForm').addClass('hidden');
+				} else if (it_type == '') {
+					$('#aForm').addClass('hidden');
+					$('#bForm').addClass('hidden');
+				}
+				$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>').hide();
+
+				// SUSPECT
+				$.ajax({
+					type: 'POST',
+					url: '<?php echo $this->lib->class_url('ALSuspectList')?>',
+					data: {'case_id':code},
+					beforeSend: function() {
+						$('#cs_rp_form_sp').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+					},
+					success: function(res) {
+						$('#cs_rp_form_sp').html(res);
+
+						rp_al_row = $('#tbl_sp_al_list').DataTable({
+							"ordering":false,
+						});
+					}
+				});
 			}
 		});
 	});
 
 	// SAVE UPDATE CASE REPORT ENTRY (AL)
-	$('#cs_rp_form_al').on('click', '.edit_rp_afd_frm', function (e) {
+	$('#cs_rp_form_al').on('click', '.upd_rp_al_frm', function (e) {
 		e.preventDefault();
-		var data = $('#editRpEntFmAFD').serialize();
-		msg.wait('#editRpEntFmAFDAlert');
-		msg.wait('#editRpEntFmAFDFooter');
+		var data = $('#updRpEntFmAL').serialize();
+		msg.wait('#updRpEntFmALAlert');
+		msg.wait('#updRpEntFmALFooter');
 		// alert(data);
 		
 		$('.btn').attr('disabled', 'disabled');
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('saveEditRpAfdFrm')?>',
+			url: '<?php echo $this->lib->class_url('saveEditRpAlFrm')?>',
 			data: data,
 			dataType: 'JSON',
 			success: function(res) {
-				msg.show(res.msg, res.alert, '#editRpEntFmAFDAlert');
-				msg.show(res.msg, res.alert, '#editRpEntFmAFDFooter');
+				msg.show(res.msg, res.alert, '#updRpEntFmALAlert');
+				msg.show(res.msg, res.alert, '#updRpEntFmALFooter');
 
 				if (res.sts == 1) {
 				
 					setTimeout(function () {
-						$('.nav-tabs li:eq(0) a').tab('show');
 						$('.btn').removeAttr('disabled');
 						
 						// REFRESH CASE REPORT
 						$('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 						$.ajax({
 							type: 'POST',
-							url: '<?php echo $this->lib->class_url('csRpEntAFD')?>',
+							url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
 							data: '',
 							success: function(res) {
 								$('#rp_ent_al').html(res);
 
-								rp_al_row = $('#tbl_rp_afd_list').DataTable({
+								rp_al_row = $('#tbl_rp_al_list').DataTable({
 									"ordering":false,
 								});
 							}
-						});
+						});	
 						
-						$('#cs_rp_form_al').html('<p><table class="table table-bordered table-hover"><thead><tr><th class="text-center">Please click Add Record or Edit button from Case Report tab</th></tr></thead></table></p>');
+						// CHANGE UPDATE FORM
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('editCaseALForm')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								$('.nav-tabs li:eq(1) a').tab('show');
+							},
+							success: function(res) {
+								$('#cs_rp_form_al').html(res);
+
+								var it_type = $('#itemType').val();
+								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								
+								if(it_type == 'MONEY' && it_type != '') {
+									$('#aForm').removeClass('hidden');
+									$('#bForm').addClass('hidden');
+								} else if (it_type != 'MONEY' && it_type != '') {
+									$('#bForm').removeClass('hidden');
+									$('#aForm').addClass('hidden');
+								} else if (it_type == '') {
+									$('#aForm').addClass('hidden');
+									$('#bForm').addClass('hidden');
+								}
+
+								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>').hide();
+							}
+						});
 
 					}, 1500);
 				} else {
@@ -506,8 +602,8 @@
 			},
 			error: function() {
 				$('.btn').removeAttr('disabled');
-				msg.danger('Please contact administrator.', '#editRpEntFmAFDAlert');
-				msg.danger('Please contact administrator.', '#editRpEntFmAFDFooter');
+				msg.danger('Please contact administrator.', '#updRpEntFmALAlert');
+				msg.danger('Please contact administrator.', '#updRpEntFmALFooter');
 			}
 		});	
 	});
@@ -559,6 +655,191 @@
 		});
 		
 	});
+
+	/*----------------------------------------
+	TAB 3 - SUSPECT DETAIL
+	------------------------------------------*/
+
+	// ADD SUSPECT DETL MODAL
+	$('#cs_rp_form_sp').on('click','.add_sp_al_btn', function(){
+
+		var case_id = $(this).val();
+
+		$('#myModalis .modal-content').empty();
+		$('#myModalis').modal('show');
+		$('#myModalis').find('.modal-content').html('<center><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:black"></i></center>');
+
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('addSuspectDetlAL')?>',
+			data: {'case_id':case_id},
+			success: function(res) {
+				$('#myModalis .modal-content').html(res);
+			}
+		});
+	});
+
+	// SEARCH STAFF
+	$('#myModalis').on('click', '.search_staff_sp', function () {
+        var case_id = $('#myModalis #case_id').val();
+		var staff_id = $('#myModalis #staff_id').val();
+		search_trigger = 1;
+		
+		if(staff_id == '') {
+			msg.show('Please enter Staff ID / Name', 'warning', '#myModalis .modal-content #alertStfIDMD');
+			return;
+		}
+
+		$('#myModalis .modal-content').empty();
+		$('#myModalis').modal('show');
+		$('#myModalis').find('.modal-content').html('<center><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:black"></i></center>');
+		
+	
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('addSuspectDetlAL')?>',
+			data: {'staff_id':staff_id, 'search_trigger':search_trigger, 'case_id':case_id},
+			success: function(res) {
+				$('#myModalis .modal-content').html(res);
+				$('#myModalis #staff_list').removeClass('hidden');
+
+				stf_row = $('#myModalis #tbl_stf_res_list').DataTable({
+                    "ordering":false,
+                });
+			}
+		});
+	});
+
+	// SELECT STAFF ID
+	$('#myModalis').on('click', '.select_staff_id_sp', function () {
+		show_loading();
+		var thisBtn = $(this);
+		var td = thisBtn.parent().siblings();
+		var staff_id = td.eq(0).html().trim();
+		var staff_name = td.eq(1).html().trim();
+
+		var ss_code = thisBtn.data("ss-code");
+		var ss_desc = thisBtn.data("ss-desc");
+		var dept_code = thisBtn.data("dept-code");
+		var dept_desc = thisBtn.data("dept-desc");
+		
+		if(staff_id != '') {
+			$('#stfID').val(staff_id);
+			$('#stfName').val(staff_name);
+
+			$('#staff_svc').val(ss_code);
+			$('#staff_svc_desc').val(ss_desc);
+
+			$('#staff_dept').val(dept_code);
+			$('#staff_dept_desc').val(dept_desc);
+		}
+
+		$('#myModalis #staff_form').removeClass('hidden');
+        $('#myModalis').animate({scrollTop: $('#staff_form').position().top}, 'slow');
+		hide_loading();
+	});
+
+	// SAVE SUSPECT DETAIL
+	$('#myModalis').on('click', '.save_sp_detl', function (e) { 
+		e.preventDefault();
+        var data = $('#spDetlForm').serialize();
+        msg.wait('#spDetlFormAlert');
+        msg.wait('#spDetlFormAlertFooter');
+		
+		$('.btn').attr('disabled', 'disabled');
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('saveSpDetl')?>',
+			data: data,
+			dataType: 'JSON',
+			success: function(res) {
+                msg.show(res.msg, res.alert, '#spDetlFormAlert');
+                msg.show(res.msg, res.alert, '#spDetlFormAlertFooter');
+				
+				if (res.sts == 1) {
+					
+					setTimeout(function () {
+						$('#myModalis').modal('hide');
+
+						// REFRESH SUSPECT LIST
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('ALSuspectList')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_sp').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_sp').html(res);
+
+								rp_al_row = $('#tbl_sp_al_list').DataTable({
+									"ordering":false,
+								});
+							}
+						});
+						
+					}, 1000);
+					$('.btn').removeAttr('disabled');
+				} else {
+					$('.btn').removeAttr('disabled');
+				}
+			},
+			error: function() {
+				$('.btn').removeAttr('disabled');
+                msg.danger('Please contact administrator.', '#spDetlFormAlert');
+                msg.danger('Please contact administrator.', '#spDetlFormAlertFooter');
+			}
+		});	
+    });
+
+	// DELETE SUSPECT DETAIL
+	$('#cs_rp_form_sp').on('click','.del_sp', function() {
+		var thisBtn = $(this);
+		var td = thisBtn.parent().siblings();
+		var staff_id = td.eq(0).html().trim();
+		var staff_name = td.eq(1).html().trim();
+		var case_id = thisBtn.val();
+		
+		$.confirm({
+		    title: 'Delete Record',
+		    content: 'Are you sure to delete this record? <br> <b>'+staff_id+' - '+staff_name+'</b>',
+			type: 'red',
+		    buttons: {
+		        yes: function () {
+					show_loading();
+					$.ajax({
+						type: 'POST',
+						url: '<?php echo $this->lib->class_url('delSpDetl')?>',
+						data: {'case_id':case_id, 'staff_id':staff_id},
+						dataType: 'JSON',
+						success: function(res) {
+							if (res.sts==1) {
+								hide_loading();
+								$.alert({
+									title: 'Success!',
+									content: res.msg,
+									type: 'green',
+								});
+								thisBtn.parents('tr').fadeOut().delay(1000).remove();
+							} else {
+								hide_loading();
+								$.alert({
+									title: 'Alert!',
+									content: res.msg,
+									type: 'red',
+								});
+							}
+						}
+					});			
+		        },
+		        cancel: function () {
+		            $.alert('Canceled Delete Record!');
+		        }
+		    }
+		});
+		
+	});
+
 
 	
 </script>

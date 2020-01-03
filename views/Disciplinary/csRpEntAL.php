@@ -22,7 +22,7 @@
 					echo '
                     <tr>
                         <td class="text-center code">'.$rl->DCM_CASE_ID.'</td>
-                        <td class="text-center sid">'.$rl->DCI_ITEMTYPE.'</td>
+                        <td class="text-center itype">'.$rl->DCI_ITEMTYPE.'</td>
                         <td class="text-center">'.$rl->DCM_CAT_CODE.'</td>
                         <td class="text-center">'.$rl->DCM_CASE_YEAR.'</td>
 						<td class="text-center">

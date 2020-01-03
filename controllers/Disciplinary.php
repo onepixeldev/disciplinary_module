@@ -560,4 +560,308 @@ class Disciplinary extends MY_Controller
 
         $this->render($data);
     }
+
+    // SAVE ADD CASE REPORT ENTRY (AL)
+    public function saveAddRpAlFrm() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCM = 0;
+        $successDCL = 0;
+        $successDCI = 0;
+        $pol_rep_date = $form['police_report_date'];
+        $dcm_sts = '';
+        $dcm_sts_date = '';
+
+        // form / input validation
+        $rule = array(
+            'case_type' => 'max_length[50]',
+            'case_year' => 'required|max_length[4]',
+            'file_reference' => 'max_length[50]',
+            'item_type' => 'required|max_length[10]',
+            'item_details' => 'max_length[10]',
+            'item_description' => 'max_length[1000]',
+            'asset_id' => 'max_length[30]',
+            'asset_type' => 'max_length[3000]',
+            'serial_no' => 'max_length[30]',
+            'brand' => 'max_length[30]',
+            'quantity' => 'numeric|max_length[10]',
+            'amount' => 'numeric|max_length[17]',
+
+            'loss_location' => 'max_length[100]',
+            'how_the_loss_happened' => 'max_length[4000]',
+            'staff_id' => 'required|max_length[10]',
+            'police_report_date' => 'max_length[11]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $gen_id = $this->disc_mdl->genALCaseID();
+            if(!empty($gen_id)) {
+                $case_id = $gen_id->CASE_ID;
+            } else {
+                $case_id = '';
+            }
+
+            if(!empty($pol_rep_date)) {
+                $dcm_sts = 'CLOSED'; 
+                $dcm_sts_date = $pol_rep_date; 
+            }
+            else if (empty($pol_rep_date) ) {
+                $dcm_sts = 'PRELIMINARY REPORT'; 
+                $dcm_sts_date = $pol_rep_date; 
+            }
+           
+            $insertDcmAL = $this->disc_mdl->insertDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form);
+            if($insertDcmAL > 0) {
+                $successDCM = 1;
+            } else {
+                $successDCM = 0;
+            }
+
+            $insertDclAL = $this->disc_mdl->insertDclAL($case_id, $form);
+            if($insertDclAL > 0) {
+                $successDCL = 1;
+            } else {
+                $successDCL = 0;
+            }
+
+            $insertDcItlAL = $this->disc_mdl->insertDcItlAL($case_id, $form);
+            if($insertDcItlAL > 0) {
+                $successDCI = 1;
+            } else {
+                $successDCI = 0;
+            }
+
+            if($successDCM > 0 && $successDCL > 0 && $successDCI > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // EDIT CASE ASSET lOSS
+    public function editCaseALForm()
+    {  
+        $case_id = $this->input->post('case_id', true);
+
+        $data['rp_al_detl'] = $this->disc_mdl->getRpALDetl($case_id);
+
+        if(!empty($data['rp_al_detl']->DCL_STAFF_LAST)) {
+            $stf_id = $data['rp_al_detl']->DCL_STAFF_LAST;
+
+            $stf_detl = $this->disc_mdl->stfDetl($stf_id);
+
+            $data['stf_name'] = $stf_detl->SM_STAFF_NAME;
+        } else {
+            $data['stf_name'] = '';
+        }
+
+        $data['cs_type'] = 'ASSET_LOSS';
+        $data['file_reference'] = 'UPSI/PEND/BG2/961';
+        $data['dcm_sts'] = 'PRELIMINARY REPORT';
+
+        $data['money_type'] = array(''=>'---Please Select---', 'CASH'=>'Wang Tunai', 'CHEQUE'=>'Cek', 'POSTORDER'=>'Wang Pos', 'MONEYORDER'=>'Kiriman Wang', 'OTHER'=>'Lain-lain');
+
+        $this->render($data);
+    }
+
+    // SAVE UPDATE CASE REPORT ENTRY (AL)
+    public function saveEditRpAlFrm() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCM = 0;
+        $successDCL = 0;
+        $successDCI = 0;
+        $pol_rep_date = $form['police_report_date'];
+        $case_id = $form['case_id'];
+        $dcm_sts = '';
+        $dcm_sts_date = '';
+
+        // form / input validation
+        $rule = array(
+            'case_type' => 'max_length[50]',
+            'case_year' => 'required|max_length[4]',
+            'file_reference' => 'max_length[50]',
+            'item_type' => 'required|max_length[10]',
+            'item_details' => 'max_length[10]',
+            'item_description' => 'max_length[1000]',
+            'asset_id' => 'max_length[30]',
+            'asset_type' => 'max_length[3000]',
+            'serial_no' => 'max_length[30]',
+            'brand' => 'max_length[30]',
+            'quantity' => 'numeric|max_length[10]',
+            'amount' => 'numeric|max_length[17]',
+
+            'loss_location' => 'max_length[100]',
+            'how_the_loss_happened' => 'max_length[4000]',
+            'staff_id' => 'required|max_length[10]',
+            'police_report_date' => 'max_length[11]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            if(!empty($pol_rep_date)) {
+                $dcm_sts = 'CLOSED'; 
+                $dcm_sts_date = $pol_rep_date; 
+            }
+            else if (empty($pol_rep_date)) {
+                $dcm_sts = 'PRELIMINARY REPORT'; 
+                $dcm_sts_date = $pol_rep_date; 
+            }
+           
+            $updateDcmAL = $this->disc_mdl->updateDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form);
+            if($updateDcmAL > 0) {
+                $successDCM = 1;
+            } else {
+                $successDCM = 0;
+            }
+
+            $updateDclAL = $this->disc_mdl->updateDclAL($case_id, $form);
+            if($updateDclAL > 0) {
+                $successDCL = 1;
+            } else {
+                $successDCL = 0;
+            }
+
+            $updateDcItlAL = $this->disc_mdl->updateDcItlAL($case_id, $form);
+            if($updateDcItlAL > 0) {
+                $successDCI = 1;
+            } else {
+                $successDCI = 0;
+            }
+
+            if($successDCM > 0 && $successDCL > 0 && $successDCI > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // SUSPECT (ASSET LOSS) LIST
+    public function ALSuspectList()
+    {   
+        $case_id = $this->input->post('case_id', true);
+
+        // get available records
+        $data['sp_list'] = $this->disc_mdl->getSpListAL($case_id);
+        $data['case_id'] = $case_id;
+
+        $this->render($data);
+    }
+
+    // ADD SUSECT DETL AL
+    public function addSuspectDetlAL()
+    {  
+        $case_id = $this->input->post('case_id', true);
+        $staff_id = $this->input->post('staff_id', true);
+        $search_trigger = $this->input->post('search_trigger', true);
+
+        $data['case_id'] = $case_id;
+
+        if(!empty($staff_id) && $search_trigger == 1) {
+            $data['stf_inf'] = $this->disc_mdl->getStaffSearch($staff_id);
+        } 
+
+        $this->render($data);
+    }
+
+    // SAVE ADD SUSPECT DETL
+    public function saveSpDetl() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCS = 0;
+        $case_id = $form['case_id'];
+        $staff_id = $form['staff_id_form'];
+
+        // form / input validation
+        $rule = array(
+            'case_id' => 'required|max_length[100]',
+            'staff_id_form' => 'required|max_length[10]',
+            'staff_dept' => 'max_length[10]',
+            'staff_svc' => 'required|max_length[10]',
+            'guilty' => 'max_length[10]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $check_rec = $this->disc_mdl->getSpdetl($case_id, $staff_id);
+
+            if(empty($check_rec)) {
+                $insertDcsAL = $this->disc_mdl->insertDcsAL($form);
+                if($insertDcsAL > 0) {
+                    $successDCS = 1;
+                } else {
+                    $successDCS = 0;
+                }
+
+                if($successDCS > 0) {
+                    $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+                } else {
+                    $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+                }
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Record already exist', 'alert' => 'danger');
+            }
+
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // DELETE SUSPECT DETL
+    public function delSpDetl() 
+    {
+		$this->isAjax();
+		
+        $case_id = $this->input->post('case_id', true);
+        $staff_id = $this->input->post('staff_id', true);
+        
+        if (!empty($case_id) && !empty($staff_id)) {
+
+            $del = $this->disc_mdl->delSpDetl($case_id, $staff_id);
+    
+            if ($del > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success');
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to delete record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => 'Invalid operation. Please contact administrator', 'alert' => 'danger');
+        }
+        echo json_encode($json);
+    }
+
 }

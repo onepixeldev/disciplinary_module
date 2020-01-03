@@ -521,7 +521,7 @@ class Disciplinary_model extends MY_Model
     // GENERATE DCM CASE ID
     public function genDcmCaseID()
     {
-        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'D'||ltrim(to_char(DISC_C_MAIN_D_SEQ.nextval,'0000000000')) AS CASE_ID");
+        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'D'||LTRIM(TO_CHAR(DISC_C_MAIN_D_SEQ.nextval,'0000000000')) AS CASE_ID");
         $this->db->from("DUAL");
 
         $q = $this->db->get();
@@ -824,7 +824,7 @@ class Disciplinary_model extends MY_Model
     // GENERATE AFD CASE ID
     public function genAFDCaseID()
     {
-        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'A'||ltrim(to_char(DISC_C_MAIN_D_SEQ.nextval,'0000000000')) AS CASE_ID");
+        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'A'||LTRIM(TO_CHAR(DISC_C_MAIN_A_SEQ.nextval,'0000000000')) AS CASE_ID");
         $this->db->from("DUAL");
 
         $q = $this->db->get();
@@ -1095,9 +1095,12 @@ class Disciplinary_model extends MY_Model
         AIH_BRAND_NAME,
         COALESCE(AIH_BIL,TO_CHAR(1)) AIH_BIL,
         AIH_INSTALL_COST,
-        AIH_ASET_DESC
+        AIH_ASET_DESC,
+        AIH_CUSTODIAN,
+        SM_STAFF_NAME
         ");
         $this->db->from("ASET_INV_HEAD");
+        $this->db->join("STAFF_MAIN", "AIH_CUSTODIAN = SM_STAFF_ID", "LEFT");
         $this->db->where("AIH_ASET_TYPE = 'ASSET'");
         $this->db->where("UPPER(AIH_ASET_CODE) LIKE UPPER('%$asset_id%') OR UPPER(AIH_SERIAL_NO) LIKE UPPER('%$asset_id%') OR UPPER(AIH_BRAND_NAME) LIKE UPPER('%$asset_id%')");
         $this->db->order_by("AIH_ASET_DESC");
@@ -1105,6 +1108,305 @@ class Disciplinary_model extends MY_Model
         $q = $this->db->get();
         
         return $q->result();
+    }
+
+    // GENERATE AL CASE ID
+    public function genALCaseID()
+    {
+        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'AL'||LTRIM(TO_CHAR(DISC_C_MAIN_AL_SEQ.nextval,'0000000000')) AS CASE_ID");
+        $this->db->from("DUAL");
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // INSERT DCM AL
+    public function insertDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        $curr_usrname = $this->username;
+
+        $this->db->select("SM_STAFF_ID, SM_DEPT_CODE");
+        $this->db->from("STAFF_MAIN");
+        $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$curr_usrname')");
+        $usr_inf = $this->db->get()->row();
+
+        if (!empty($usr_inf)) {
+            $usr_dept = $usr_inf->SM_DEPT_CODE;
+        } else {
+            $usr_dept = '';
+        }
+        
+        $data = array(
+            "DCM_CASE_ID" => $case_id,
+            "DCM_CAT_CODE" => $form['case_type'],
+            "DCM_CASE_YEAR" => $form['case_year'],
+            "DCM_STATUS" => $dcm_sts,
+
+            "DCM_ENTER_BY" => $curr_usr_id,
+            "DCM_DEPT" => $usr_dept
+        );
+
+        if(!empty($dcm_sts_date)) {
+            $date = "TO_DATE('".$dcm_sts_date."', 'DD/MM/YYYY')";
+            $this->db->set("DCM_STATUS_DATE", $date, false);
+        }
+        
+        $this->db->set("DCM_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_MAIN", $data);
+    }
+
+    // INSERT DCL AL
+    public function insertDclAL($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_CASE_ID" => $case_id,
+            "DCL_REF_CODE" => $form['file_reference'],
+            "DCL_ACTUAL_LOC" => $form['loss_location'],
+            "DCL_LOST_METHOD" => $form['how_the_loss_happened'],
+            "DCL_STAFF_LAST" => $form['staff_id'],
+
+            "DCL_ENTER_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['police_report_date'])) {
+            $date = "TO_DATE('".$form['police_report_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_POLICE_REPORT_DATE", $date, false);
+        } 
+        
+        $this->db->set("DCL_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // INSERT DCI AL
+    public function insertDcItlAL($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCI_CASE_ID" => $case_id,
+            "DCI_ITEMTYPE" => $form['item_type'],
+            "DCI_ITEM" => $form['item_details'],
+            "DCI_ITEM_DESC" => $form['item_description'],
+            "DCI_ASSET_CODE" => $form['asset_id'],
+            "DCI_ASSET_DESC" => $form['asset_type'],
+            "DCI_ASSET_SERIAL" => $form['serial_no'],
+            "DCI_BRAND_NAME" => $form['brand'],
+            "DCI_BIL" => $form['quantity'],
+            "DCI_AMOUNT" => $form['amount'],
+
+            "DCI_ENTER_BY" => $curr_usr_id
+        );
+        
+        $this->db->set("DCI_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_ITEMLOST", $data);
+    }
+
+    // AL CASE DETL
+    public function getRpALDetl($case_id)
+    {
+        $this->db->select("DCM_CASE_ID,
+        DCM_CAT_CODE,
+        DCM_CASE_YEAR,
+        DCM_STATUS,
+
+        DCL_REF_CODE,
+
+        DCI_ITEMTYPE,
+        DCI_ITEM,
+        DCI_ITEM_DESC,
+        DCI_ASSET_CODE,
+        DCI_ASSET_DESC,
+        DCI_ASSET_SERIAL,
+        DCI_BRAND_NAME,
+        DCI_BIL,
+        DCI_AMOUNT,
+
+        DCL_ACTUAL_LOC,
+        DCL_LOST_METHOD,
+        DCL_STAFF_LAST,
+        DCL_POLICE_REPORT_DATE,
+
+        TO_CHAR(DCL_POLICE_REPORT_DATE, 'DD/MM/YYYY') AS DCL_POLICE_REPORT_DATE2");
+        $this->db->from("DISC_CASE_MAIN");
+        $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
+        $this->db->join("DISC_CASE_ITEMLOST", "DCM_CASE_ID = DCI_CASE_ID", "LEFT");
+        $this->db->where("DCM_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // UPDATE DCM AL
+    public function updateDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        $curr_usrname = $this->username;
+
+        $this->db->select("SM_STAFF_ID, SM_DEPT_CODE");
+        $this->db->from("STAFF_MAIN");
+        $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$curr_usrname')");
+        $usr_inf = $this->db->get()->row();
+
+        if (!empty($usr_inf)) {
+            $usr_dept = $usr_inf->SM_DEPT_CODE;
+        } else {
+            $usr_dept = '';
+        }
+        
+        $data = array(
+            "DCM_CAT_CODE" => $form['case_type'],
+            "DCM_CASE_YEAR" => $form['case_year'],
+            "DCM_STATUS" => $dcm_sts,
+
+            "DCM_UPDATE_BY" => $curr_usr_id,
+        );
+
+        if(!empty($dcm_sts_date)) {
+            $date = "TO_DATE('".$dcm_sts_date."', 'DD/MM/YYYY')";
+            $this->db->set("DCM_STATUS_DATE", $date, false);
+        }
+        
+        $this->db->set("DCM_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCM_CASE_ID", $case_id);
+
+        return $this->db->update("DISC_CASE_MAIN", $data);
+    }
+
+    // UPDATE DCL AL
+    public function updateDclAL($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_REF_CODE" => $form['file_reference'],
+            "DCL_ACTUAL_LOC" => $form['loss_location'],
+            "DCL_LOST_METHOD" => $form['how_the_loss_happened'],
+            "DCL_STAFF_LAST" => $form['staff_id'],
+
+            "DCL_UPDATE_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['police_report_date'])) {
+            $date = "TO_DATE('".$form['police_report_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_POLICE_REPORT_DATE", $date, false);
+        } 
+        
+        $this->db->set("DCL_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCL_CASE_ID", $case_id);
+
+        return $this->db->update("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // UPDATE DCI AL
+    public function updateDcItlAL($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCI_ITEMTYPE" => $form['item_type'],
+            "DCI_ITEM" => $form['item_details'],
+            "DCI_ITEM_DESC" => $form['item_description'],
+            "DCI_ASSET_CODE" => $form['asset_id'],
+            "DCI_ASSET_DESC" => $form['asset_type'],
+            "DCI_ASSET_SERIAL" => $form['serial_no'],
+            "DCI_BRAND_NAME" => $form['brand'],
+            "DCI_BIL" => $form['quantity'],
+            "DCI_AMOUNT" => $form['amount'],
+
+            "DCI_UPDATE_BY" => $curr_usr_id
+        );
+        
+        $this->db->set("DCI_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCI_CASE_ID", $case_id);
+
+        return $this->db->update("DISC_CASE_ITEMLOST", $data);
+    }
+
+    // AL SUSPECT LIST
+    public function getSpListAL($case_id)
+    {
+        $this->db->select("DCS_CASE_ID,
+        DCS_STAFF_ID,
+        SM_STAFF_NAME,
+        DCS_DEPT,
+        DM_DEPT_DESC,
+        DCS_JOBCODE,
+        SS_SERVICE_DESC,
+        DCS_GUILTY,
+        CASE DCS_GUILTY
+        WHEN 'Y' THEN 'Yes'
+        WHEN 'N' THEN 'No'
+        ELSE ''
+        END As DCS_GUILTY_DESC");
+        $this->db->from("DISC_CASE_SUSPECT");
+        $this->db->join("STAFF_MAIN", "SM_STAFF_ID = DCS_STAFF_ID", "LEFT");
+        $this->db->join("DEPARTMENT_MAIN", "DM_DEPT_CODE = DCS_DEPT", "LEFT");
+        $this->db->join("SERVICE_SCHEME", "DCS_JOBCODE = SS_SERVICE_CODE", "LEFT");
+        $this->db->where("DCS_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // INSERT DCS AL
+    public function insertDcsAL($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCS_CASE_ID" => $form['case_id'],
+            "DCS_STAFF_ID" => $form['staff_id_form'],
+            "DCS_DEPT" => $form['staff_dept'],
+            "DCS_JOBCODE" => $form['staff_svc'],
+            "DCS_GUILTY" => $form['guilty'],
+
+            "DCS_ENTER_BY" => $curr_usr_id
+        );
+
+        $this->db->set("DCS_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_SUSPECT", $data);
+    }
+
+    // AL SUSPECT DETL
+    public function getSpdetl($case_id, $staff_id)
+    {
+        $this->db->select("DCS_CASE_ID,
+        DCS_STAFF_ID");
+        $this->db->from("DISC_CASE_SUSPECT");
+        $this->db->where("DCS_CASE_ID",$case_id);
+        $this->db->where("DCS_STAFF_ID",$staff_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // DELETE SUSPECT DETL
+    public function delSpDetl($case_id, $staff_id) 
+    {
+        $this->db->where("DCS_CASE_ID",$case_id);
+        $this->db->where("DCS_STAFF_ID",$staff_id);
+        return $this->db->delete('DISC_CASE_SUSPECT');
     }
 
 }
