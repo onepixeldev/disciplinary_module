@@ -1587,7 +1587,7 @@ class Disciplinary_model extends MY_Model
         return $this->db->insert("DISC_CASE_COMMITTEE", $data);
     }
 
-    // DELETE COMMITTEE DETL
+    // DELETE COMMITTEE MEMBER
     public function delCmmMem($case_id, $seq) 
     {
         $this->db->where("DCC_SEQ",$seq);
