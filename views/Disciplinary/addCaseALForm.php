@@ -24,7 +24,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">File Reference</label>
+        <label class="col-md-2 control-label">File Reference <b><font color="red">* </font></b></label>
         <div class="col-md-4">
             <input name="form[file_reference]" class="form-control" type="text" value="<?php echo $file_reference?>">
         </div>
@@ -57,7 +57,7 @@
 
     <div id="bForm" class="hidden">
         <div class="form-group">
-            <label class="col-md-2 control-label">Asset ID </label>
+            <label class="col-md-2 control-label">Asset ID</label>
             <div class="col-md-4">
                 <input name="form[asset_id]" class="form-control" type="text" id="asset_id" readonly>
             </div>

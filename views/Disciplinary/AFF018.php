@@ -523,6 +523,23 @@
 						});
 					}
 				});
+
+				// COMMITTEE
+				$.ajax({
+					type: 'POST',
+					url: '<?php echo $this->lib->class_url('comCaseAl')?>',
+					data: {'case_id':code},
+					beforeSend: function() {
+						$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+					},
+					success: function(res) {
+						$('#cs_rp_form_cm').html(res);
+
+						rp_al_row = $('#tbl_cl_list').DataTable({
+							"ordering":false,
+						});
+					}
+				});
 			}
 		});
 	});
@@ -840,6 +857,261 @@
 		
 	});
 
+	/*----------------------------------------
+	TAB 4 - COMMITTEE
+	------------------------------------------*/
 
+	// CHANGE DATE JKTK
+	$('#cs_rp_form_cm').on('dp.change', '#dateJKTK', function () {
+		var jktk_date = $(this).val();
+		var dcm_sts = $('#dcmSts').val();
+		$('#loaderSts').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+
+		if(jktk_date != '') {
+			$('#dcmSts').val('CLOSED');
+		} else if(jktk_date == '' && dcm_sts == 'CLOSED') {
+			$('#dcmSts').val('PRELIMINARY REPORT');
+		}
+
+		$('#loaderSts').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>').hide();
+	});
+
+	// SAVE COMMITTEE DETL
+	$('#cs_rp_form_cm').on('click', '.save_cm_detl_frm', function (e) { 
+		e.preventDefault();
+        var data = $('#comDetl').serialize();
+        msg.wait('#comDetlAlert');
+        msg.wait('#comDetlAlertFooter');
+		
+		$('.btn').attr('disabled', 'disabled');
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('saveCmDetl')?>',
+			data: data,
+			dataType: 'JSON',
+			success: function(res) {
+                msg.show(res.msg, res.alert, '#comDetlAlert');
+                msg.show(res.msg, res.alert, '#comDetlAlertFooter');
+				
+				if (res.sts == 1) {
+					
+					setTimeout(function () {
+						// REFRESH CASE REPORT
+						$('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
+							data: '',
+							success: function(res) {
+								$('#rp_ent_al').html(res);
+
+								rp_al_row = $('#tbl_rp_al_list').DataTable({
+									"ordering":false,
+								});
+							}
+						});	
+
+						// COMMITTEE
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('comCaseAl')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_cm').html(res);
+
+								rp_al_row = $('#tbl_cl_list').DataTable({
+									"ordering":false,
+								});
+							}
+						});
+					}, 1000);
+					$('.btn').removeAttr('disabled');
+				} else {
+					$('.btn').removeAttr('disabled');
+				}
+			},
+			error: function() {
+				$('.btn').removeAttr('disabled');
+                msg.danger('Please contact administrator.', '#comDetlAlert');
+                msg.danger('Please contact administrator.', '#comDetlAlertFooter');
+			}
+		});	
+    });
+
+	// ADD COMMITTEE MODAL
+	$('#cs_rp_form_cm').on('click','.add_cm_btn', function(){
+
+		var case_id = $(this).val();
+
+		$('#myModalis .modal-content').empty();
+		$('#myModalis').modal('show');
+		$('#myModalis').find('.modal-content').html('<center><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:black"></i></center>');
+
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('addCommAL')?>',
+			data: {'case_id':case_id},
+			success: function(res) {
+				$('#myModalis .modal-content').html(res);
+			}
+		});
+	});
+
+	// SEARCH STAFF
+	$('#myModalis').on('click', '.search_staff_cm', function () {
+        var case_id = $('#myModalis #case_id').val();
+		var staff_id = $('#myModalis #staff_id').val();
+		search_trigger = 1;
+		
+		if(staff_id == '') {
+			msg.show('Please enter Staff ID / Name', 'warning', '#myModalis .modal-content #alertStfIDMD');
+			return;
+		}
+
+		$('#myModalis .modal-content').empty();
+		$('#myModalis').modal('show');
+		$('#myModalis').find('.modal-content').html('<center><i class="fa fa-spinner fa-spin fa-3x fa-fw" style="color:black"></i></center>');
+		
+	
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('addCommAL')?>',
+			data: {'staff_id':staff_id, 'search_trigger':search_trigger, 'case_id':case_id},
+			success: function(res) {
+				$('#myModalis .modal-content').html(res);
+				$('#myModalis #staff_list').removeClass('hidden');
+
+				stf_row = $('#myModalis #tbl_stf_res_list').DataTable({
+                    "ordering":false,
+                });
+			}
+		});
+	});
+
+	// SELECT STAFF ID
+	$('#myModalis').on('click', '.select_staff_id_cm', function () {
+		show_loading();
+		var thisBtn = $(this);
+		var td = thisBtn.parent().siblings();
+		var staff_id = td.eq(0).html().trim();
+		var staff_name = td.eq(1).html().trim();
+
+		var dept_code = thisBtn.data("dept-code");
+		var dept_desc = thisBtn.data("dept-desc");
+		
+		if(staff_id != '') {
+			$('#stfID').val(staff_id);
+			$('#stfName').val(staff_name);
+
+			$('#staff_dept').val(dept_code);
+			$('#staff_dept_desc').val(dept_desc);
+		}
+
+		$('#myModalis #staff_form').removeClass('hidden');
+        $('#myModalis').animate({scrollTop: $('#staff_form').position().top}, 'slow');
+		hide_loading();
+	});
+
+	// SAVE COMMITTEE MEMBER
+	$('#myModalis').on('click', '.save_cmm_mem', function (e) { 
+		e.preventDefault();
+        var data = $('#comMemForm').serialize();
+        msg.wait('#comMemFormAlert');
+		
+		$('.btn').attr('disabled', 'disabled');
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('saveCommMem')?>',
+			data: data,
+			dataType: 'JSON',
+			success: function(res) {
+                msg.show(res.msg, res.alert, '#comMemFormAlert');
+				
+				if (res.sts == 1) {
+					
+					setTimeout(function () {
+						$('#myModalis').modal('hide');
+
+						// COMMITTEE
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('comCaseAl')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_cm').html(res);
+
+								rp_al_row = $('#tbl_cl_list').DataTable({
+									"ordering":false,
+								});
+							}
+						});
+						
+					}, 1000);
+					$('.btn').removeAttr('disabled');
+				} else {
+					$('.btn').removeAttr('disabled');
+				}
+			},
+			error: function() {
+				$('.btn').removeAttr('disabled');
+                msg.danger('Please contact administrator.', '#comMemFormAlert');
+			}
+		});	
+    });
+
+	// DELETE COMMITTEE MEMBER
+	$('#cs_rp_form_cm').on('click','.del_cmm', function() {
+		var thisBtn = $(this);
+		var td = thisBtn.parent().siblings();
+		var seq = td.eq(0).html().trim();
+		var staff_id = td.eq(1).html().trim();
+		var staff_name = td.eq(2).html().trim();
+		var case_id = thisBtn.val();
+		
+		$.confirm({
+		    title: 'Delete Record',
+		    content: 'Are you sure to delete this record? <br> <b>'+staff_id+' - '+staff_name+'</b>',
+			type: 'red',
+		    buttons: {
+		        yes: function () {
+					show_loading();
+					$.ajax({
+						type: 'POST',
+						url: '<?php echo $this->lib->class_url('delCmmMem')?>',
+						data: {'seq':seq, 'case_id':case_id},
+						dataType: 'JSON',
+						success: function(res) {
+							if (res.sts==1) {
+								hide_loading();
+								$.alert({
+									title: 'Success!',
+									content: res.msg,
+									type: 'green',
+								});
+								thisBtn.parents('tr').fadeOut().delay(1000).remove();
+							} else {
+								hide_loading();
+								$.alert({
+									title: 'Alert!',
+									content: res.msg,
+									type: 'red',
+								});
+							}
+						}
+					});			
+		        },
+		        cancel: function () {
+		            $.alert('Canceled Delete Record!');
+		        }
+		    }
+		});
+		
+	});
 	
 </script>

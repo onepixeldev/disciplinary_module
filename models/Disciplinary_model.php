@@ -1409,4 +1409,190 @@ class Disciplinary_model extends MY_Model
         return $this->db->delete('DISC_CASE_SUSPECT');
     }
 
+    // COMMITTEE LIST
+    public function getComList($case_id)
+    {
+        $this->db->select("DCC_CASE_ID,
+        DCC_SEQ, DCC_COMMITTEE_ID, SM_STAFF_NAME, SM_DEPT_CODE");
+        $this->db->from("DISC_CASE_COMMITTEE");
+        $this->db->join("STAFF_MAIN", "SM_STAFF_ID = DCC_COMMITTEE_ID", "LEFT");
+        $this->db->where("DCC_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // COMMITTEE DETL
+    public function getComDetl($case_id)
+    {
+        $this->db->select("DCM_CASE_ID,
+        DCM_STATUS,
+        DCL_CASE_ID, 
+        TO_CHAR(DCL_APPOINTS_COMMITTEE_DATE, 'DD/MM/YYYY') AS DCL_APPOINTS_COMMITTEE_DATE2,
+        DCL_RECOMMED_COMMITTEE_INQUIRY,
+        TO_CHAR(DCL_STATUS_DATE, 'DD/MM/YYYY') AS DCL_STATUS_DATE2,
+        DCL_STATUS,
+        TO_CHAR(DCL_JKTK_DATE, 'DD/MM/YYYY') AS DCL_JKTK_DATE2,
+        DCL_NOTES
+        ");
+        $this->db->from("DISC_CASE_MAIN");
+        $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
+        $this->db->where("DCM_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // DECISION STATUS DD
+    public function getDecStsDD()
+    {
+        $this->db->select("DAR_RESULT_CODE,
+        DAR_RESULT_DESC");
+        $this->db->from("DISC_ASSET_RESULT");
+        $this->db->where("COALESCE(DAR_STATUS,'N') = 'Y'");
+        $this->db->order_by("DAR_RESULT_CODE");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // UPDATE DCL AL 2
+    public function updDclAL2($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_RECOMMED_COMMITTEE_INQUIRY" => $form['recommendation_investigation_committee'],
+            "DCL_STATUS" => $form['decision'],
+            "DCL_NOTES" => $form['decision_jktk'],
+
+            "DCL_UPDATE_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['commitee_appointment_date'])) {
+            $date = "TO_DATE('".$form['commitee_appointment_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_APPOINTS_COMMITTEE_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_APPOINTS_COMMITTEE_DATE", '', true);
+        }
+        
+        if(!empty($form['decision_date'])) {
+            $date = "TO_DATE('".$form['decision_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_STATUS_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_STATUS_DATE", '', true);
+        }
+
+        if(!empty($form['decision_date_jktk'])) {
+            $date = "TO_DATE('".$form['decision_date_jktk']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_JKTK_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_JKTK_DATE", '', true);
+        }
+        
+        $this->db->set("DCL_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCL_CASE_ID", $form['case_id']);
+
+        return $this->db->update("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // UPDATE DCM AL 2
+    public function updDcmAL2($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCM_STATUS" => $form['status'],
+
+            "DCM_UPDATE_BY" => $curr_usr_id,
+        );
+        
+        $this->db->set("DCM_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCM_CASE_ID", $form['case_id']);
+
+        return $this->db->update("DISC_CASE_MAIN", $data);
+    }
+
+    // SEARCH STAFF COMMITTEE
+    public function getStaffSearchCom($staffID)
+    {
+        $this->db->select("SM_STAFF_ID, SM_STAFF_NAME, SM_STAFF_ID ||' - '||SM_STAFF_NAME AS SM_STAFF_ID_NAME,
+        SS_SERVICE_CODE,
+        SS_SERVICE_DESC,
+        SM_DEPT_CODE,
+        DM_DEPT_DESC");
+        $this->db->from("STAFF_MAIN, SERVICE_SCHEME, DEPARTMENT_MAIN");
+        $this->db->where("SM_JOB_CODE = SS_SERVICE_CODE");
+        $this->db->where("SM_DEPT_CODE = DM_DEPT_CODE");
+        $this->db->where("SM_STAFF_TYPE = 'STAFF'");
+        // $this->db->where("SS_STATUS_STS = 'ACTIVE'");
+
+        $this->db->where("(UPPER(SM_STAFF_ID) LIKE UPPER('%$staffID%') OR UPPER(SM_STAFF_NAME) LIKE UPPER('%$staffID%'))");
+        $this->db->order_by("2");
+
+        $q = $this->db->get();
+        return $q->result();
+    }
+
+    // AL SUSPECT DETL
+    public function getCommMemDetl($case_id, $staff_id)
+    {
+        $this->db->select("DCC_CASE_ID,
+        DCC_COMMITTEE_ID");
+        $this->db->from("DISC_CASE_COMMITTEE");
+        $this->db->where("DCC_CASE_ID",$case_id);
+        $this->db->where("DCC_COMMITTEE_ID",$staff_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // INSERT DCC AL
+    public function insertDccAL($form) 
+    {
+        $this->db->select("MAX(DCC_SEQ) AS MAX_SEQ");
+        $this->db->from("DISC_CASE_COMMITTEE");
+
+        $q = $this->db->get()->row();
+
+        if(!empty($q)) {
+            $seq = $q->MAX_SEQ;
+            $seq++;
+            $seq_rec = $seq;
+        } else {
+            $seq_rec = 0;
+        }
+
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCC_CASE_ID" => $form['case_id'],
+            "DCC_SEQ" => $seq_rec,
+            "DCC_COMMITTEE_ID" => $form['staff_id_form'],
+
+            "DCC_ENTER_BY" => $curr_usr_id
+        );
+
+        $this->db->set("DCC_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_COMMITTEE", $data);
+    }
+
+    // DELETE COMMITTEE DETL
+    public function delCmmMem($case_id, $seq) 
+    {
+        $this->db->where("DCC_SEQ",$seq);
+        $this->db->where("DCC_CASE_ID",$case_id);
+        return $this->db->delete('DISC_CASE_COMMITTEE');
+    }
+
 }

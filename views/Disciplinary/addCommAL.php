@@ -13,7 +13,7 @@
             
 
             <div class="col-md-2">
-                <button type="button" class="btn btn-primary search_staff_sp"><i class="fa fa-search"></i> </button>
+                <button type="button" class="btn btn-primary search_staff_cm"><i class="fa fa-search"></i> </button>
             </div>
         </div>
 
@@ -43,7 +43,7 @@
                                         <td class="text-center staff_id col-md-2">' . $si->SM_STAFF_ID . '</td>
                                         <td class="text-left staff_id">' . $si->SM_STAFF_NAME . '</td>
                                         <td class="text-center col-md-1">
-                                            <button type="button" class="btn btn-primary btn-xs select_staff_id_sp" data-ss-code="'.$si->SS_SERVICE_CODE.'" data-ss-desc="'.$si->SS_SERVICE_DESC.'" data-dept-code="'.$si->SM_DEPT_CODE.'" data-dept-desc="'.$si->DM_DEPT_DESC.'"><i class="fa fa-chevron-down"></i> Select</button>
+                                            <button type="button" class="btn btn-primary btn-xs select_staff_id_cm" data-dept-code="'.$si->SM_DEPT_CODE.'" data-dept-desc="'.$si->DM_DEPT_DESC.'"><i class="fa fa-chevron-down"></i> Select</button>
                                         </td>
                                     </tr>
                                     ';
@@ -61,13 +61,13 @@
 </form>
 
 <div class="hidden" id="staff_form">
-    <form id="spDetlForm" class="form-horizontal" method="post">
+    <form id="comMemForm" class="form-horizontal" method="post">
         <div class="alert alert-info fade in">
             <b>Details</b>
         </div>
 
         <div class="modal-body">
-            <div id="spDetlFormAlert"></div>
+            <div id="comMemFormAlert"></div>
 
             <div class="form-group">
                 <label class="col-md-3 control-label">Case ID</label>
@@ -97,33 +97,10 @@
                     <input name="" class="form-control" type="text" id="staff_dept_desc" readonly>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label class="col-md-3 control-label">Service</label>
-                <div class="col-md-2">
-                    <input name="form[staff_svc]" class="form-control" type="text" id="staff_svc" readonly>
-                </div>
-
-                <div class="col-md-6">
-                    <input name="" class="form-control" type="text" id="staff_svc_desc" readonly>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="col-md-3 control-label">Guilty ?</label>
-                <div class="col-md-4">
-                    <?php
-                        echo form_dropdown('form[guilty]', array(''=>'--- Please Select ---', 'Y'=>'Yes', 'N'=>'No'), '', 'class="form-control" style="width: 100%"')
-                    ?>
-                </div>
-            </div>
-            
-            <div id="spDetlFormAlertFooter">
-            </div>
         </div>
         
         <div class="modal-footer">
-            <button type="submit" class="btn btn-primary save_sp_detl"><i class="fa fa-save"></i> Save</button>
+            <button type="submit" class="btn btn-primary save_cmm_mem"><i class="fa fa-save"></i> Save</button>
         </div>
     </form>                            
 </div>

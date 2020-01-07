@@ -32,7 +32,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">File Reference</label>
+        <label class="col-md-2 control-label">File Reference <b><font color="red">* </font></b></label>
         <div class="col-md-4">
             <input name="form[file_reference]" class="form-control" type="text" value="<?php echo $rp_al_detl->DCL_REF_CODE?>">
         </div>

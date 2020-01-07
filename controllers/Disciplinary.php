@@ -579,7 +579,7 @@ class Disciplinary extends MY_Controller
         $rule = array(
             'case_type' => 'max_length[50]',
             'case_year' => 'required|max_length[4]',
-            'file_reference' => 'max_length[50]',
+            'file_reference' => 'required|max_length[50]',
             'item_type' => 'required|max_length[10]',
             'item_details' => 'max_length[10]',
             'item_description' => 'max_length[1000]',
@@ -696,7 +696,7 @@ class Disciplinary extends MY_Controller
         $rule = array(
             'case_type' => 'max_length[50]',
             'case_year' => 'required|max_length[4]',
-            'file_reference' => 'max_length[50]',
+            'file_reference' => 'required|max_length[50]',
             'item_type' => 'required|max_length[10]',
             'item_details' => 'max_length[10]',
             'item_description' => 'max_length[1000]',
@@ -864,4 +864,161 @@ class Disciplinary extends MY_Controller
         echo json_encode($json);
     }
 
+    // COMMITEE CASE
+    public function comCaseAl()
+    {   
+        $case_id = $this->input->post('case_id', true);
+
+        // get available records
+        $data['com_list'] = $this->disc_mdl->getComList($case_id);
+        $data['com_detl'] = $this->disc_mdl->getComDetl($case_id);
+        $data['dec_sts_dd'] = $this->dropdown($this->disc_mdl->getDecStsDD(), 'DAR_RESULT_CODE', 'DAR_RESULT_DESC', ' ---Please select--- ');
+        $data['case_id'] = $case_id;
+
+        $this->render($data);
+    }
+
+    // SAVE COMMITTEE DETL
+    public function saveCmDetl() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCS = 0;
+        $case_id = $form['case_id'];
+
+        // form / input validation
+        $rule = array(
+            // 'case_id' => 'required|max_length[100]',
+            'commitee_appointment_date' => 'required|max_length[11]',
+            'recommendation_investigation_committee' => 'max_length[4000]',
+            'decision_date' => 'required|max_length[11]',
+            'decision' => 'max_length[10]',
+            'decision_date_jktk' => 'max_length[11]',
+            'status' => 'max_length[100]',
+            'decision_jktk' => 'max_length[4000]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $updDclAL2 = $this->disc_mdl->updDclAL2($form);
+            if($updDclAL2 > 0) {
+                $successDCL2 = 1;
+            } else {
+                $successDCL2 = 0;
+            }
+
+            $updDcmAL2 = $this->disc_mdl->updDcmAL2($form);
+            if($updDcmAL2 > 0) {
+                $successDCM2 = 1;
+            } else {
+                $successDCM2 = 0;
+            }
+
+            if($successDCL2 > 0 && $successDCM2 > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // ADD COMMITTEE AL
+    public function addCommAL()
+    {  
+        $case_id = $this->input->post('case_id', true);
+        $staff_id = $this->input->post('staff_id', true);
+        $search_trigger = $this->input->post('search_trigger', true);
+
+        $data['case_id'] = $case_id;
+
+        if(!empty($staff_id) && $search_trigger == 1) {
+            $data['stf_inf'] = $this->disc_mdl->getStaffSearch($staff_id);
+        } 
+
+        $this->render($data);
+    }
+
+    // SAVE ADD COMMITTEE MEMBER
+    public function saveCommMem() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCC = 0;
+        $case_id = $form['case_id'];
+        $staff_id = $form['staff_id_form'];
+
+        // form / input validation
+        $rule = array(
+            'case_id' => 'required|max_length[100]',
+            'staff_id_form' => 'required|max_length[10]',
+            'staff_dept' => 'max_length[12]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $check_rec = $this->disc_mdl->getCommMemDetl($case_id, $staff_id);
+
+            if(empty($check_rec)) {
+                $insertDccAL = $this->disc_mdl->insertDccAL($form);
+                if($insertDccAL > 0) {
+                    $successDCC = 1;
+                } else {
+                    $successDCC = 0;
+                }
+
+                if($successDCC > 0) {
+                    $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+                } else {
+                    $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+                }
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Record already exist', 'alert' => 'danger');
+            }
+
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // DELETE COMMITTEE DETL
+    public function delCmmMem() 
+    {
+		$this->isAjax();
+        
+        $seq = $this->input->post('seq', true);
+        $case_id = $this->input->post('case_id', true);
+        
+        if (!empty($case_id) && !empty($seq)) {
+
+            $del = $this->disc_mdl->delCmmMem($case_id, $seq);
+    
+            if ($del > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success');
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to delete record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => 'Invalid operation. Please contact administrator', 'alert' => 'danger');
+        }
+        echo json_encode($json);
+    }
 }
