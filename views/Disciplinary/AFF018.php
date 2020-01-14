@@ -184,6 +184,7 @@
 			success: function(res) {
 				$('#cs_rp_form_al').html(res);
 				$('#cs_rp_form_sp').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
+				$('#cs_rp_form_cm').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
 			}
 		});
     });
@@ -475,7 +476,7 @@
 	});
 
 	// UPDATE CASE AL
-	$('#rp_ent_al').on('click','.upd_rp_ent', function(){
+	$('#rp_ent_al').on('click','.upd_rp_al', function(){
 
 		var thisBtn = $(this);
 		var td = thisBtn.closest("tr");
@@ -626,23 +627,21 @@
 	});
 
 	// DELETE CASE REPORT ENTRY (AL)
-	$('#rp_ent_al').on('click','.del_rp_afd', function() {
+	$('#rp_ent_al').on('click','.del_rp_al', function() {
 		var thisBtn = $(this);
 		var td = thisBtn.closest("tr");
 		var case_id = td.find(".code").text();
-		var sid = td.find(".sid").text();
-		var name = td.find(".name").text();
 		
 		$.confirm({
 		    title: 'Delete Record',
-		    content: 'Are you sure to delete this record? <br> <b>'+case_id+' - '+name+' ('+sid+')'+'</b>',
+		    content: 'Are you sure to delete this record? <br> <b> Case ID: '+case_id+'</b>',
 			type: 'red',
 		    buttons: {
 		        yes: function () {
 					show_loading();
 					$.ajax({
 						type: 'POST',
-						url: '<?php echo $this->lib->class_url('delCaseAfdForm')?>',
+						url: '<?php echo $this->lib->class_url('delCaseALForm')?>',
 						data: {'case_id' : case_id},
 						dataType: 'JSON',
 						success: function(res) {
@@ -1089,12 +1088,22 @@
 						success: function(res) {
 							if (res.sts==1) {
 								hide_loading();
-								$.alert({
-									title: 'Success!',
-									content: res.msg,
-									type: 'green',
+								// COMMITTEE
+								$.ajax({
+									type: 'POST',
+									url: '<?php echo $this->lib->class_url('comCaseAl')?>',
+									data: {'case_id':res.case_id},
+									beforeSend: function() {
+										$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+									},
+									success: function(res) {
+										$('#cs_rp_form_cm').html(res);
+
+										rp_al_row = $('#tbl_cl_list').DataTable({
+											"ordering":false,
+										});
+									}
 								});
-								thisBtn.parents('tr').fadeOut().delay(1000).remove();
 							} else {
 								hide_loading();
 								$.alert({

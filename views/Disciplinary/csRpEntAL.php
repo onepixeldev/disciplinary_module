@@ -29,8 +29,8 @@
                             <div class="btn-group">
                                 <button type="button" class="btn btn-xs btn-warning" data-toggle="dropdown"><i class="fa fa-bars"></i> Menu</button>
                                 <div style="background-color:silver;text-align:center;width:5px;" class="dropdown-menu dropdown-menu-right dd_btn">
-                                    <button type="button" class="btn btn-success text-left btn-block btn-xs upd_rp_ent" value=""><i class="fa fa-edit"></i> Edit</button>
-                                    <button type="button" class="btn btn-danger text-left btn-block btn-xs del_rp_afd" value=""><i class="fa fa-trash"></i> Delete</button>
+                                    <button type="button" class="btn btn-success text-left btn-block btn-xs upd_rp_al" value=""><i class="fa fa-edit"></i> Edit</button>
+                                    <button type="button" class="btn btn-danger text-left btn-block btn-xs del_rp_al" value=""><i class="fa fa-trash"></i> Delete</button>
                                 </div>
                             </div>
 						</td>

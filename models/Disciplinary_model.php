@@ -1417,6 +1417,7 @@ class Disciplinary_model extends MY_Model
         $this->db->from("DISC_CASE_COMMITTEE");
         $this->db->join("STAFF_MAIN", "SM_STAFF_ID = DCC_COMMITTEE_ID", "LEFT");
         $this->db->where("DCC_CASE_ID",$case_id);
+        $this->db->order_by("DCC_SEQ");
 
         $q = $this->db->get();
         
@@ -1434,7 +1435,9 @@ class Disciplinary_model extends MY_Model
         TO_CHAR(DCL_STATUS_DATE, 'DD/MM/YYYY') AS DCL_STATUS_DATE2,
         DCL_STATUS,
         TO_CHAR(DCL_JKTK_DATE, 'DD/MM/YYYY') AS DCL_JKTK_DATE2,
-        DCL_NOTES
+        DCL_NOTES,
+        DCL_INQUIRY,
+        TO_CHAR(DCL_MPE_DATE, 'DD/MM/YYYY') AS DCL_MPE_DATE2
         ");
         $this->db->from("DISC_CASE_MAIN");
         $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
@@ -1559,6 +1562,7 @@ class Disciplinary_model extends MY_Model
     public function insertDccAL($form) 
     {
         $this->db->select("MAX(DCC_SEQ) AS MAX_SEQ");
+        $this->db->where("DCC_CASE_ID", $form['case_id']);
         $this->db->from("DISC_CASE_COMMITTEE");
 
         $q = $this->db->get()->row();
@@ -1587,12 +1591,275 @@ class Disciplinary_model extends MY_Model
         return $this->db->insert("DISC_CASE_COMMITTEE", $data);
     }
 
+    // INSERT DCC IQ
+    public function updSeqCmAl($case_id, $seq_count, $cur_seq) 
+    {   
+        $data = array(
+            "DCC_SEQ" => $seq_count,
+        );
+
+        $this->db->where("DCC_CASE_ID", $case_id);
+        $this->db->where("DCC_SEQ", $cur_seq);
+
+        return $this->db->update("DISC_CASE_COMMITTEE", $data);
+    }
+
     // DELETE COMMITTEE MEMBER
     public function delCmmMem($case_id, $seq) 
     {
         $this->db->where("DCC_SEQ",$seq);
         $this->db->where("DCC_CASE_ID",$case_id);
         return $this->db->delete('DISC_CASE_COMMITTEE');
+    }
+
+    // GET VERIFY DCL
+    public function verDCL($case_id)
+    {
+        $this->db->select("1");
+        $this->db->from("DISC_CASE_LOSTREPORT");
+        $this->db->where("DCL_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        return $q->row();
+    }
+
+    // GET VERIFY DCI
+    public function verDCI($case_id)
+    {
+        $this->db->select("1");
+        $this->db->from("DISC_CASE_ITEMLOST");
+        $this->db->where("DCI_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        return $q->row();
+    }
+
+    // GET VERIFY DCC
+    public function verDCC($case_id)
+    {
+        $this->db->select("1");
+        $this->db->from("DISC_CASE_COMMITTEE");
+        $this->db->where("DCC_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        return $q->row();
+    }
+
+    // GET VERIFY DCS
+    public function verDCS($case_id)
+    {
+        $this->db->select("1");
+        $this->db->from("DISC_CASE_SUSPECT");
+        $this->db->where("DCS_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        return $q->row();
+    }
+
+    // DELETE CASE REPORT ENTRY (ASSET LOSS)
+    public function delCaseALForm($case_id) 
+    {
+        $this->db->where("DCM_CASE_ID", $case_id);
+        return $this->db->delete('DISC_CASE_MAIN');
+    }
+
+    /*===========================================================
+       CASE REPORT ENTRY (INQUIRY) - AFF017
+    =============================================================*/
+
+    // CASE REPORT ENTRY (INQUIRY) LIST
+    public function getRpIQList()
+    {
+        $this->db->select("DCM_CASE_ID, 
+        DCM_CAT_CODE, 
+        DCM_CASE_YEAR,
+        TO_CHAR(DCL_COMPLAINT_DATE, 'DD/MM/YYYY') AS DCL_COMPLAINT_DATE2
+        ");
+        $this->db->from("DISC_CASE_MAIN");
+        $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
+        $this->db->where("DCM_CAT_CODE = 'INQUIRY_SHOWCAUSE'");
+        $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // GENERATE IQ CASE ID
+    public function genIQCaseID()
+    {
+        $this->db->select("TO_CHAR(SYSDATE, 'YYYY')||'-'||'IS'||LTRIM(TO_CHAR(DISC_C_MAIN_IS_SEQ.nextval,'0000000000')) AS CASE_ID");
+        $this->db->from("DUAL");
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // INSERT DCM IQ
+    public function insertDcmIQ($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        $curr_usrname = $this->username;
+
+        $this->db->select("SM_STAFF_ID, SM_DEPT_CODE");
+        $this->db->from("STAFF_MAIN");
+        $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$curr_usrname')");
+        $usr_inf = $this->db->get()->row();
+
+        if (!empty($usr_inf)) {
+            $usr_dept = $usr_inf->SM_DEPT_CODE;
+        } else {
+            $usr_dept = '';
+        }
+        
+        $data = array(
+            "DCM_CASE_ID" => $case_id,
+            "DCM_CAT_CODE" => $form['case_type'],
+            "DCM_CASE_YEAR" => $form['case_year'],
+            "DCM_STATUS" => 'PRELIMINARY REPORT',
+
+            "DCM_ENTER_BY" => $curr_usr_id,
+            "DCM_DEPT" => $usr_dept
+        );
+        
+        $this->db->set("DCM_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_MAIN", $data);
+    }
+
+    // INSERT DCL IQ
+    public function insertDclIQ($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_CASE_ID" => $case_id,
+            "DCL_REF_CODE" => $form['file_reference'],
+
+            "DCL_ENTER_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['complaint_date'])) {
+            $date = "TO_DATE('".$form['complaint_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_COMPLAINT_DATE", $date, false);
+        } 
+
+        if(!empty($form['audit_report_date'])) {
+            $date = "TO_DATE('".$form['audit_report_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_AUDIT_DATE", $date, false);
+        } 
+        
+        $this->db->set("DCL_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // IQ CASE DETL
+    public function getRpIQDetl($case_id)
+    {
+        $this->db->select("DCM_CASE_ID,
+        DCM_CAT_CODE,
+        DCM_CASE_YEAR,
+        DCL_REF_CODE,
+        TO_CHAR(DCL_COMPLAINT_DATE, 'DD/MM/YYYY') AS DCL_COMPLAINT_DATE2,
+        TO_CHAR(DCL_AUDIT_DATE, 'DD/MM/YYYY') AS DCL_AUDIT_DATE2");
+        $this->db->from("DISC_CASE_MAIN");
+        $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
+        $this->db->where("DCM_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // UPDATE DCL IQ 2
+    public function updDclIQ2($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_INQUIRY" => $form['investigation_scope'],
+            "DCL_RECOMMED_COMMITTEE_INQUIRY" => $form['investigation_committee_rec'],
+            "DCL_NOTES" => $form['decision_mpe'],
+
+            "DCL_UPDATE_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['commitee_appointment_date'])) {
+            $date = "TO_DATE('".$form['commitee_appointment_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_APPOINTS_COMMITTEE_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_APPOINTS_COMMITTEE_DATE", '', true);
+        }
+        
+        if(!empty($form['decision_date_mpe'])) {
+            $date = "TO_DATE('".$form['decision_date_mpe']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_MPE_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_MPE_DATE", '', true);
+        }
+        
+        $this->db->set("DCL_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCL_CASE_ID", $form['case_id']);
+
+        return $this->db->update("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // UPDATE DCM IQ 2
+    public function updDcmIQ2($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCM_STATUS" => $form['status'],
+
+            "DCM_UPDATE_BY" => $curr_usr_id,
+        );
+        
+        $this->db->set("DCM_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCM_CASE_ID", $form['case_id']);
+
+        return $this->db->update("DISC_CASE_MAIN", $data);
+    }
+
+    // INSERT DCC IQ
+    public function insertDccIQ($form) 
+    {
+        $this->db->select("MAX(DCC_SEQ) AS MAX_SEQ");
+        $this->db->where("DCC_CASE_ID", $form['case_id']);
+        $this->db->from("DISC_CASE_COMMITTEE");
+
+        $q = $this->db->get()->row();
+
+        if(!empty($q)) {
+            $seq = $q->MAX_SEQ;
+            $seq++;
+            $seq_rec = $seq;
+        } else {
+            $seq_rec = 0;
+        }
+
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCC_CASE_ID" => $form['case_id'],
+            "DCC_SEQ" => $seq_rec,
+            "DCC_COMMITTEE_ID" => $form['staff_id_form'],
+
+            "DCC_ENTER_BY" => $curr_usr_id
+        );
+
+        $this->db->set("DCC_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_COMMITTEE", $data);
     }
 
 }

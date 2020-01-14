@@ -44,6 +44,12 @@ class Disciplinary extends MY_Controller
         $this->render();
     }
 
+    // CASE REPORT ENTRY INQUIRY
+    public function AFF017()
+    {   
+        $this->render();
+    }
+
     /*===========================================================
        CASE REPORT ENTRY (DISCIPLINARY) - AFF016
     =============================================================*/
@@ -885,7 +891,8 @@ class Disciplinary extends MY_Controller
 
         // get parameter values
         $form = $this->input->post('form', true);
-        $successDCS = 0;
+        $successDCL2 = 0;
+        $successDCM2 = 0;
         $case_id = $form['case_id'];
 
         // form / input validation
@@ -1006,13 +1013,28 @@ class Disciplinary extends MY_Controller
         
         $seq = $this->input->post('seq', true);
         $case_id = $this->input->post('case_id', true);
+        $seq_count = 0;
         
         if (!empty($case_id) && !empty($seq)) {
 
             $del = $this->disc_mdl->delCmmMem($case_id, $seq);
     
             if ($del > 0) {
-                $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success');
+                $com_list = $this->disc_mdl->getComList($case_id);
+                if(!empty($com_list)) {
+                    foreach($com_list as $cl) {
+                        $cur_seq = $cl->DCC_SEQ; 
+                        $seq_count = $seq_count + 1;
+
+                        if($cur_seq != $seq_count) {
+                            $upd_seq = $this->disc_mdl->updSeqCmAl($case_id, $seq_count, $cur_seq);
+                        }
+                    }
+
+                    $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success', 'case_id' => $case_id);
+                } else {
+                    $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success', 'case_id' => $case_id);
+                }
             } else {
                 $json = array('sts' => 0, 'msg' => 'Fail to delete record', 'alert' => 'danger');
             }
@@ -1021,4 +1043,268 @@ class Disciplinary extends MY_Controller
         }
         echo json_encode($json);
     }
+
+    /*===========================================================
+       CASE REPORT ENTRY (INQUIRY) - AFF017
+    =============================================================*/
+
+    // CASE REPORT ENTRY (INQUIRY) LIST
+    public function csRpEntIQ()
+    {   
+        // get available records
+        $data['rp_iq_list'] = $this->disc_mdl->getRpIQList();
+
+        $this->render($data);
+    }
+
+    // ADD CASE IQ
+    public function addCaseIQForm()
+    {  
+        $data['cs_type'] = 'INQUIRY_SHOWCAUSE';
+        $data['file_reference'] = 'UPSI/PEND/BG2/812';
+        // $data['dcm_sts'] = 'PRELIMINARY REPORT';
+
+        $this->render($data);
+    }
+
+    // SAVE ADD CASE REPORT ENTRY (INQUIRY)
+    public function saveAddRpIqFrm() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCM = 0;
+        $successDCL = 0;
+
+        // form / input validation
+        $rule = array(
+            'case_type' => 'max_length[50]',
+            'case_year' => 'required|max_length[4]',
+            'file_reference' => 'required|max_length[50]',
+            'complaint_date' => 'max_length[11]',
+            'audit_report_date' => 'max_length[11]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $gen_id = $this->disc_mdl->genIQCaseID();
+            if(!empty($gen_id)) {
+                $case_id = $gen_id->CASE_ID;
+            } else {
+                $case_id = '';
+            }
+           
+            $insertDcmIQ = $this->disc_mdl->insertDcmIQ($case_id, $form);
+            if($insertDcmIQ > 0) {
+                $successDCM = 1;
+            } else {
+                $successDCM = 0;
+            }
+
+            $insertDclIQ = $this->disc_mdl->insertDclIQ($case_id, $form);
+            if($insertDclIQ > 0) {
+                $successDCL = 1;
+            } else {
+                $successDCL = 0;
+            }
+
+            if($successDCM > 0 && $successDCL > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // EDIT CASE INQUIRY
+    public function editCaseIQForm()
+    {  
+        $case_id = $this->input->post('case_id', true);
+
+        $data['rp_iq_detl'] = $this->disc_mdl->getRpIQDetl($case_id);
+
+        $this->render($data);
+    }
+
+    // INQUIRY COMMITEE
+    public function editCommIQForm()
+    {   
+        $case_id = $this->input->post('case_id', true);
+
+        // get available records
+        $data['com_list'] = $this->disc_mdl->getComList($case_id);
+        $data['com_detl'] = $this->disc_mdl->getComDetl($case_id);
+        $data['case_id'] = $case_id;
+
+        $this->render($data);
+    }
+
+    // SAVE COMMITTEE IQ DETL
+    public function saveCmIQDetl() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCL2 = 0;
+        $successDCM2 = 0;
+        $case_id = $form['case_id'];
+
+        // form / input validation
+        $rule = array(
+            // 'case_id' => 'required|max_length[100]',
+            'commitee_appointment_date' => 'required|max_length[11]',
+            'investigation_scope' => 'max_length[4000]',
+            'investigation_committee_rec' => 'required|max_length[4000]',
+            'decision_date_mpe' => 'max_length[11]',
+            'status' => 'max_length[100]',
+            'decision_mpe' => 'max_length[4000]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $updDclIQ2 = $this->disc_mdl->updDclIQ2($form);
+            if($updDclIQ2 > 0) {
+                $successDCL2 = 1;
+            } else {
+                $successDCL2 = 0;
+            }
+
+            $updDcmIQ2 = $this->disc_mdl->updDcmIQ2($form);
+            if($updDcmIQ2 > 0) {
+                $successDCM2 = 1;
+            } else {
+                $successDCM2 = 0;
+            }
+
+            if($successDCL2 > 0 && $successDCM2 > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // ADD COMMITTEE IQ
+    public function addCommIQ()
+    {  
+        $case_id = $this->input->post('case_id', true);
+        $staff_id = $this->input->post('staff_id', true);
+        $search_trigger = $this->input->post('search_trigger', true);
+
+        $data['case_id'] = $case_id;
+
+        if(!empty($staff_id) && $search_trigger == 1) {
+            $data['stf_inf'] = $this->disc_mdl->getStaffSearch($staff_id);
+        } 
+
+        $this->render($data);
+    }
+
+    // SAVE ADD COMMITTEE MEMBER
+    public function saveCommIQ() 
+    {
+        $this->isAjax();
+
+        // get parameter values
+        $form = $this->input->post('form', true);
+        $successDCC = 0;
+        $case_id = $form['case_id'];
+        $staff_id = $form['staff_id_form'];
+
+        // form / input validation
+        $rule = array(
+            'case_id' => 'required|max_length[100]',
+            'staff_id_form' => 'required|max_length[10]',
+            'staff_dept' => 'max_length[12]'
+        );
+
+        $exclRule = null;
+        
+        list($status, $err) = $this->validation('form', $form, $exclRule, $rule);
+
+        if ($status == 1) {
+
+            $check_rec = $this->disc_mdl->getCommMemDetl($case_id, $staff_id);
+
+            if(empty($check_rec)) {
+                $insertDccAL = $this->disc_mdl->insertDccAL($form);
+                if($insertDccAL > 0) {
+                    $successDCC = 1;
+                } else {
+                    $successDCC = 0;
+                }
+
+                if($successDCC > 0) {
+                    $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success', 'case_id' => $case_id);
+                } else {
+                    $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+                }
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Record already exist', 'alert' => 'danger');
+            }
+
+        } else {
+            $json = array('sts' => 0, 'msg' => $err, 'alert' => 'danger');
+        }
+         
+        echo json_encode($json);
+    }
+
+    // DELETE COMMITTEE MEMBER INQUIRY
+    public function delCmmIQ() 
+    {
+		$this->isAjax();
+        
+        $seq = $this->input->post('seq', true);
+        $case_id = $this->input->post('case_id', true);
+        $seq_count = 0;
+        
+        if (!empty($case_id) && !empty($seq)) {
+
+            $del = $this->disc_mdl->delCmmMem($case_id, $seq);
+    
+            if ($del > 0) {
+                $com_list = $this->disc_mdl->getComList($case_id);
+                if(!empty($com_list)) {
+                    foreach($com_list as $cl) {
+                        $cur_seq = $cl->DCC_SEQ; 
+                        $seq_count = $seq_count + 1;
+
+                        if($cur_seq != $seq_count) {
+                            $upd_seq = $this->disc_mdl->updSeqCmAl($case_id, $seq_count, $cur_seq);
+                        }
+                    }
+
+                    $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success', 'case_id' => $case_id);
+                } else {
+                    $json = array('sts' => 1, 'msg' => 'Record has been deleted', 'alert' => 'success', 'case_id' => $case_id);
+                }
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to delete record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => 'Invalid operation. Please contact administrator', 'alert' => 'danger');
+        }
+        echo json_encode($json);
+    }
+
 }

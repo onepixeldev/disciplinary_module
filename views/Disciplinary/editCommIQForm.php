@@ -5,7 +5,7 @@
 <br>
 
 <div class="text-right">
-	<button type="button" class="btn btn-primary btn-sm add_cm_btn" value="<?php echo $case_id?>"><i class="fa fa-plus"></i> Add Record</button>
+	<button type="button" class="btn btn-primary btn-sm add_cm_iq_btn" value="<?php echo $case_id?>"><i class="fa fa-plus"></i> Add Record</button>
 </div>
 <br>
 <div class="well">
@@ -50,8 +50,8 @@
     <h4 class="modal-title txt-color-white" id="myModalLabel">Committee Detail</h4>
 </div>
 <br>
-<form id="comDetl" class="form-horizontal" method="post">
-    <div id="comDetlAlert"></div>
+<form id="comDetlIQ" class="form-horizontal" method="post">
+    <div id="comDetlIQAlert"></div>
 
     <div class="form-group">
         <div class="col-md-2"></div>
@@ -77,37 +77,33 @@
 
     <div class="form-group">
         <div class="col-md-2"></div>
+        <label class="col-md-4 control-label text-left"><b>Investigation Scope</b></label>
+    </div>
+    <div class="form-group">
+        <div class="col-md-2"></div>
+        <div class="col-md-10">
+            <textarea name="form[investigation_scope]" class="form-control" type="text" rows="4" cols="50"><?php echo $com_detl->DCL_INQUIRY?></textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-2"></div>
         <label class="col-md-4 control-label text-left"><b>Investigation Committee Recommendation</b></label>
     </div>
     <div class="form-group">
         <div class="col-md-2"></div>
-        <div class="col-md-8">
-            <input name="form[recommendation_investigation_committee]" class="form-control" type="text" value="<?php echo $com_detl->DCL_RECOMMED_COMMITTEE_INQUIRY?>">
+        <div class="col-md-10">
+            <textarea name="form[investigation_committee_rec]" class="form-control" type="text" rows="4" cols="50"><?php echo $com_detl->DCL_RECOMMED_COMMITTEE_INQUIRY?></textarea>
         </div>
     </div>
 
     <div class="alert alert-info fade in">
-        <b>Guard Officer Decision</b>
+        <b>MPE Result</b>
     </div>
     <div class="form-group">
         <label class="col-md-2 control-label">Date</label>
         <div class="col-md-4">
-            <input name="form[decision_date]" class="form-control dtPicker" type="text" value="<?php echo $com_detl->DCL_STATUS_DATE2?>" placeholder="DD/MM/YYYY">
-        </div>
-
-        <label class="col-md-2 control-label">Decision</label>
-        <div class="col-md-4">
-            <?php echo form_dropdown('form[decision]', $dec_sts_dd, $com_detl->DCL_STATUS, 'class="form-control width-50"')?>
-        </div>
-    </div>
-
-    <div class="alert alert-info fade in">
-        <b>Decision of Jawatankuasa Tindakan Kewangan (JKTK)</b>
-    </div>
-    <div class="form-group">
-        <label class="col-md-2 control-label">Date</label>
-        <div class="col-md-4">
-            <input name="form[decision_date_jktk]" class="form-control dtPicker" type="text" value="<?php echo $com_detl->DCL_JKTK_DATE2?>" placeholder="DD/MM/YYYY" id="dateJKTK">
+            <input name="form[decision_date_mpe]" class="form-control dtPicker" type="text" value="<?php echo $com_detl->DCL_MPE_DATE2?>" placeholder="DD/MM/YYYY" id="dateMPE">
         </div>
 
         <label class="col-md-2 control-label">Status</label>
@@ -121,14 +117,14 @@
     <div class="form-group">
         <label class="col-md-2 control-label">Decision</label>
         <div class="col-md-10">
-            <textarea name="form[decision_jktk]" class="form-control" type="text" rows="4" cols="50"><?php echo $com_detl->DCL_NOTES?></textarea>
+            <textarea name="form[decision_mpe]" class="form-control" type="text" rows="4" cols="50"><?php echo $com_detl->DCL_NOTES?></textarea>
         </div>
     </div>
 
-    <div id="comDetlAlertFooter"></div>
+    <div id="comDetlIQAlertFooter"></div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary save_cm_detl_frm"><i class="fa fa-save"></i> Save</button>
+        <button type="button" class="btn btn-primary save_cm_iq_frm"><i class="fa fa-save"></i> Save</button>
     </div>
 </form>
 </p>
