@@ -164,7 +164,7 @@
 			data: {'case_sts':case_sts, 'year_frm':year_frm, 'year_to':year_to, 'repCode':repCode},
 			dataType: 'JSON',
 			success: function(res) {
-				window.open("report?r="+res.report,"mywin","width=800,height=600");
+				window.open("report?r="+res.report,"mywin1","width=800,height=600");
 			}
 		});
 	});
@@ -192,7 +192,7 @@
 			data: {'repCode':repCode, 'case_sts':case_sts, 'year_frm':year_frm, 'year_to':year_to},
 			dataType: 'JSON',
 			success: function(res) {
-				window.open("report?r="+res.report,"mywin","width=800,height=600");
+				window.open("report?r="+res.report,"mywin2","width=800,height=600");
 			}
 		});
 	});
