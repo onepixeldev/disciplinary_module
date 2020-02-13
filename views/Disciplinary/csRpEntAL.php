@@ -9,6 +9,7 @@
 		<thead>
             <tr>
                 <th class="text-center col-md-2">Case ID</th>
+                <th class="text-center col-md-1">Reference File</th>
                 <th class="text-center col-md-1">Item Type</th>
                 <th class="text-center col-md-1">Category</th>
                 <th class="text-center col-md-1">Year</th>
@@ -22,6 +23,7 @@
 					echo '
                     <tr>
                         <td class="text-center code">'.$rl->DCM_CASE_ID.'</td>
+                        <td class="text-center">'.$rl->DCL_REF_CODE.'</td>
                         <td class="text-center itype">'.$rl->DCI_ITEMTYPE.'</td>
                         <td class="text-center">'.$rl->DCM_CAT_CODE.'</td>
                         <td class="text-center">'.$rl->DCM_CASE_YEAR.'</td>

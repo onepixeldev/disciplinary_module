@@ -13,7 +13,7 @@
     <div class="form-group">
         <label class="col-md-2 control-label">Case ID</label>
         <div class="col-md-4">
-            <input name="form[case_type]" class="form-control" type="text" value="<?php echo $rp_iq_detl->DCM_CASE_ID?>" readonly>
+            <input name="form[case_id]" class="form-control" type="text" value="<?php echo $rp_iq_detl->DCM_CASE_ID?>" readonly>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
     </div>
     
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary add_rp_iq_frm"><i class="fa fa-save"></i> Save</button>
+        <button type="button" class="btn btn-primary edit_rp_iq_frm"><i class="fa fa-save"></i> Save</button>
     </div>
 </form>
 

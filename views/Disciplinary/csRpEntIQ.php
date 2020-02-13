@@ -9,6 +9,7 @@
 		<thead>
             <tr>
                 <th class="text-center col-md-2">Case ID</th>
+                <th class="text-center col-md-1">Reference File</th>
                 <th class="text-center col-md-1">Case Type</th>
                 <th class="text-center col-md-1">Complaint Date</th>
                 <th class="text-center col-md-1">Case Year</th>
@@ -22,6 +23,7 @@
 					echo '
                     <tr>
                         <td class="text-center code">'.$ril->DCM_CASE_ID.'</td>
+                        <td class="text-center">'.$ril->DCL_REF_CODE.'</td>
                         <td class="text-center itype">'.$ril->DCM_CAT_CODE.'</td>
                         <td class="text-center">'.$ril->DCL_COMPLAINT_DATE2.'</td>
                         <td class="text-center">'.$ril->DCM_CASE_YEAR.'</td>

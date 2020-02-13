@@ -31,12 +31,18 @@
                         <td class="text-left sname">'.$cl->SM_STAFF_NAME.'</td>
                         <td class="text-center">'.$cl->SM_DEPT_CODE.'</td>
 						<td class="text-center">
-                            <button type="button" class="btn btn-danger text-left btn-xs del_cmm" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
+                            <button type="button" class="btn btn-danger text-left btn-xs del_cmm2" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
 						</td>
 					</tr>
                     ';
 				}
-			} 
+			} else {
+                echo '
+                    <tr>
+                        <td class="text-center" colspan="5">No record found.</td>
+					</tr>
+                    ';
+            } 
 		?>
 		</tbody>
 		</table>	
@@ -98,7 +104,7 @@
     </div>
 
     <div class="alert alert-info fade in">
-        <b>MPE Result</b>
+        <b>MPE Decision</b>
     </div>
     <div class="form-group">
         <label class="col-md-2 control-label">Date</label>

@@ -422,7 +422,8 @@ class Disciplinary_model extends MY_Model
         SM_STAFF_NAME, 
         DCM_CAT_CODE, 
         DCM_CASE_YEAR,
-        DCS_GUILTY, 
+        DCS_GUILTY,
+        DCS_REF, 
         CASE DCS_GUILTY
         WHEN 'Y' THEN 'Yes'
         WHEN 'N' THEN 'No'
@@ -452,6 +453,20 @@ class Disciplinary_model extends MY_Model
         $this->db->where("SM_DEPT_CODE = DM_DEPT_CODE");
         $this->db->where("SM_STAFF_TYPE = 'STAFF'");
         // $this->db->where("SS_STATUS_STS = 'ACTIVE'");
+
+        $this->db->where("(UPPER(SM_STAFF_ID) LIKE UPPER('%$staffID%') OR UPPER(SM_STAFF_NAME) LIKE UPPER('%$staffID%'))");
+        $this->db->order_by("2");
+
+        $q = $this->db->get();
+        return $q->result();
+    }
+
+    // SEARCH STAFF 2
+    public function getStaffSearch2($staffID)
+    {
+        $this->db->select("SM_STAFF_ID, SM_STAFF_NAME, SM_STAFF_ID ||' - '||SM_STAFF_NAME AS SM_STAFF_ID_NAME");
+        $this->db->from("STAFF_MAIN");
+        $this->db->where("SM_STAFF_TYPE = 'STAFF'");
 
         $this->db->where("(UPPER(SM_STAFF_ID) LIKE UPPER('%$staffID%') OR UPPER(SM_STAFF_NAME) LIKE UPPER('%$staffID%'))");
         $this->db->order_by("2");
@@ -683,6 +698,17 @@ class Disciplinary_model extends MY_Model
         return $q->row();
     }
 
+    // STAFF DETL 2
+    public function stfDetl2($stf_id)
+    {
+        $this->db->select("SM_STAFF_ID, SM_STAFF_NAME, SM_STAFF_ID ||' - '||SM_STAFF_NAME AS SM_STAFF_ID_NAME");
+        $this->db->from("STAFF_MAIN");
+        $this->db->where("SM_STAFF_ID", $stf_id);
+
+        $q = $this->db->get();
+        return $q->row();
+    }
+
     // UPDATE DCM
     public function updDcm($case_id, $form) 
     {
@@ -805,6 +831,7 @@ class Disciplinary_model extends MY_Model
         DCM_CAT_CODE, 
         DCM_CASE_YEAR,
         DCS_GUILTY, 
+        DCS_REF,
         CASE DCS_GUILTY
         WHEN 'Y' THEN 'Yes'
         WHEN 'N' THEN 'No'
@@ -1074,11 +1101,12 @@ class Disciplinary_model extends MY_Model
         $this->db->select("DCM_CASE_ID, 
         DCM_CAT_CODE, 
         DCM_CASE_YEAR,
-        DCI_ITEMTYPE
+        DCI_ITEMTYPE,
+        DCL_REF_CODE
         ");
         $this->db->from("DISC_CASE_MAIN");
         $this->db->join("DISC_CASE_ITEMLOST", "DCM_CASE_ID = DCI_CASE_ID", "LEFT");
-        // $this->db->join("STAFF_MAIN", "DCS_STAFF_ID = SM_STAFF_ID", "LEFT");
+        $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
         $this->db->where("DCM_CAT_CODE = 'ASSET_LOSS'");
         $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
 
@@ -1097,6 +1125,7 @@ class Disciplinary_model extends MY_Model
         AIH_INSTALL_COST,
         AIH_ASET_DESC,
         AIH_CUSTODIAN,
+        SM_STAFF_ID,
         SM_STAFF_NAME
         ");
         $this->db->from("ASET_INV_HEAD");
@@ -1122,7 +1151,7 @@ class Disciplinary_model extends MY_Model
     }
 
     // INSERT DCM AL
-    public function insertDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form) 
+    public function insertDcmAL($case_id, $dcm_sts, $form) 
     {
         $curr_date = "SYSDATE";
         $curr_usr_id = $this->staff_id;
@@ -1248,7 +1277,7 @@ class Disciplinary_model extends MY_Model
     }
 
     // UPDATE DCM AL
-    public function updateDcmAL($case_id, $dcm_sts, $dcm_sts_date, $form) 
+    public function updateDcmAL($case_id, $dcm_sts, $form) 
     {
         $curr_date = "SYSDATE";
         $curr_usr_id = $this->staff_id;
@@ -1518,6 +1547,13 @@ class Disciplinary_model extends MY_Model
         
         $this->db->set("DCM_UPDATE_DATE", $curr_date, false);
 
+        if(!empty($form['decision_date_jktk'])) {
+            $date = "TO_DATE('".$form['decision_date_jktk']."', 'DD/MM/YYYY')";
+            $this->db->set("DCM_STATUS_DATE", $date, false);
+        } else {
+            $this->db->set("DCM_STATUS_DATE", '', true);
+        }
+
         $this->db->where("DCM_CASE_ID", $form['case_id']);
 
         return $this->db->update("DISC_CASE_MAIN", $data);
@@ -1673,6 +1709,7 @@ class Disciplinary_model extends MY_Model
         $this->db->select("DCM_CASE_ID, 
         DCM_CAT_CODE, 
         DCM_CASE_YEAR,
+        DCL_REF_CODE,
         TO_CHAR(DCL_COMPLAINT_DATE, 'DD/MM/YYYY') AS DCL_COMPLAINT_DATE2
         ");
         $this->db->from("DISC_CASE_MAIN");
@@ -1755,6 +1792,60 @@ class Disciplinary_model extends MY_Model
         $this->db->set("DCL_ENTER_DATE", $curr_date, false);
 
         return $this->db->insert("DISC_CASE_LOSTREPORT", $data);
+    }
+
+    // UPDATE DCM IQ
+    public function updDcmIQ($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCM_CAT_CODE" => $form['case_type'],
+            "DCM_CASE_YEAR" => $form['case_year'],
+            "DCM_STATUS" => 'PRELIMINARY REPORT',
+
+            "DCM_UPDATE_BY" => $curr_usr_id,
+        );
+        
+        $this->db->set("DCM_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCM_CASE_ID", $case_id);
+
+        return $this->db->update("DISC_CASE_MAIN", $data);
+    }
+
+    // UPDATE DCL IQ
+    public function updDclIQ($case_id, $form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCL_REF_CODE" => $form['file_reference'],
+
+            "DCL_UPDATE_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['complaint_date'])) {
+            $date = "TO_DATE('".$form['complaint_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_COMPLAINT_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_COMPLAINT_DATE", '', true);
+        }
+
+        if(!empty($form['audit_report_date'])) {
+            $date = "TO_DATE('".$form['audit_report_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCL_AUDIT_DATE", $date, false);
+        } else {
+            $this->db->set("DCL_AUDIT_DATE", '', true);
+        }
+        
+        $this->db->set("DCL_UPDATE_DATE", $curr_date, false);
+
+        $this->db->where("DCL_CASE_ID", $case_id);
+
+        return $this->db->update("DISC_CASE_LOSTREPORT", $data);
     }
 
     // IQ CASE DETL
@@ -1862,4 +1953,572 @@ class Disciplinary_model extends MY_Model
         return $this->db->insert("DISC_CASE_COMMITTEE", $data);
     }
 
+    // INQUIRY SUSPECT LIST
+    public function getSpListIQ($case_id)
+    {
+        $this->db->select("DCS_CASE_ID,
+        DCS_STAFF_ID,
+        SM_STAFF_NAME,
+        DCS_DEPT,
+        DM_DEPT_DESC,
+        DCS_JOBCODE,
+        SS_SERVICE_DESC,
+        DCS_GUILTY,
+        CASE DCS_GUILTY
+        WHEN 'Y' THEN 'Yes'
+        WHEN 'N' THEN 'No'
+        ELSE ''
+        END As DCS_GUILTY_DESC,
+        DCS_GROUP_SERVICE,
+        DGS_GROUP_DESC");
+        $this->db->from("DISC_CASE_SUSPECT");
+        $this->db->join("STAFF_MAIN", "SM_STAFF_ID = DCS_STAFF_ID", "LEFT");
+        $this->db->join("DEPARTMENT_MAIN", "DM_DEPT_CODE = DCS_DEPT", "LEFT");
+        $this->db->join("SERVICE_SCHEME", "DCS_JOBCODE = SS_SERVICE_CODE", "LEFT");
+        $this->db->join("DISC_GROUP_SERVICE", "DGS_GROUP_CODE = DCS_GROUP_SERVICE", "LEFT");
+        $this->db->where("DCS_CASE_ID",$case_id);
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // INSERT DCS INQUIRY
+    public function insertDcsIQ($form) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCS_CASE_ID" => $form['case_id'],
+            "DCS_STAFF_ID" => $form['staff_id_form'],
+            "DCS_DEPT" => $form['staff_dept'],
+            "DCS_JOBCODE" => $form['staff_svc'],
+            "DCS_GROUP_SERVICE" => $form['group_service'],
+            "DCS_GUILTY" => $form['guilty'],
+
+            "DCS_ENTER_BY" => $curr_usr_id
+        );
+
+        $this->db->set("DCS_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_SUSPECT", $data);
+    }
+
+    /*===========================================================
+       CASE UPDATE - AFF015
+    =============================================================*/
+
+    // CASE YEAR LIST
+    public function getCsYear()
+    {
+        $this->db->select("DCM_CASE_YEAR");
+        $this->db->from("DISC_CASE_MAIN");
+        $this->db->group_by("DCM_CASE_YEAR");
+        $this->db->order_by("DCM_CASE_YEAR DESC");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // CASE LIST
+    public function getCsUpdList($case_type_f = null, $year_f = null, $sts_f = null)
+    {
+        $this->db->select("DCM_CASE_ID, 
+        DCM_CAT_CODE, 
+        DCM_CASE_YEAR,
+        DCM_STATUS,
+        TO_CHAR(DCM_STATUS_DATE, 'DD/MM/YYYY') AS DCM_STATUS_DATE2
+        ");
+        $this->db->from("DISC_CASE_MAIN");
+
+        if(!empty($case_type_f)) {
+            $this->db->where("DCM_CAT_CODE", $case_type_f);
+        }
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        } 
+
+        if($sts_f == 'CLOSED') {
+            $this->db->where("DCM_STATUS = 'CLOSED'");
+        } else {
+            $this->db->where("DCM_STATUS <> 'CLOSED'");
+        }
+
+        $this->db->order_by("DCM_CASE_ID");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // CASE DETL 1
+    public function getCaseDetl($case_id)
+    {
+        $this->db->select("DCS_REF, DCS_STAFF_ID, SM_STAFF_NAME");
+        $this->db->from("DISC_CASE_SUSPECT, STAFF_MAIN");
+        $this->db->where("DCS_CASE_ID", $case_id);
+        $this->db->where("DCS_STAFF_ID = SM_STAFF_ID");
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // CASE DETL 2
+    public function getCaseDetl2($case_id)
+    {
+        $this->db->select("DCL_REF_CODE, DCL_INQUIRY");
+        $this->db->from("DISC_CASE_LOSTREPORT");
+        $this->db->where("DCL_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // GET ITEM TYPE AL
+    public function getItemTypeAl($case_id)
+    {
+        $this->db->select("DCI_ITEMTYPE");
+        $this->db->from("DISC_CASE_ITEMLOST");
+        $this->db->where("DCI_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // CASE DETL 3
+    public function getCaseDetl3($case_id)
+    {
+        $this->db->select("DCL_REF_CODE, DCI_ITEM, DCI_ITEM_DESC");
+        $this->db->from("DISC_CASE_LOSTREPORT, DISC_CASE_ITEMLOST");
+        $this->db->where("DCL_CASE_ID = DCI_CASE_ID");
+        $this->db->where("DCL_CASE_ID", $case_id);
+        $this->db->where("DCI_ITEMTYPE = 'MONEY'");
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // CASE DETL 4
+    public function getCaseDetl4($case_id)
+    {
+        $this->db->select("DCL_REF_CODE, DCI_ASSET_CODE, DCI_ASSET_DESC");
+        $this->db->from("DISC_CASE_LOSTREPORT, DISC_CASE_ITEMLOST");
+        $this->db->where("DCL_CASE_ID = DCI_CASE_ID");
+        $this->db->where("DCL_CASE_ID", $case_id);
+        $this->db->where("DCI_ITEMTYPE IN ('ASSET','INVENTORY')");
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // GET STATUS LIST
+    public function getStatusList($case_id)
+    {
+        $this->db->select("SM_STATUS_RANK, SM_STATUS_CODE, SM_STATUS_DESC, SM_STATUS_RANK||'. '||SM_STATUS_CODE||' - '||SM_STATUS_DESC AS STS_CODE_DESC");
+        $this->db->from("STATUS_MAIN");
+        $this->db->where("SM_MODULE_CODE = 'HRA_AF'");
+        $this->db->where("SM_FUNCTION = 'DISCIPLINARY'");
+        $this->db->where("NOT EXISTS (SELECT * 
+        FROM DISC_CASE_PROGRESS 
+        WHERE DCP_CASE_ID = '$case_id'
+        AND DCP_STATUS = STATUS_MAIN.SM_STATUS_CODE)");
+        $this->db->order_by("SM_STATUS_RANK");
+
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // GET STATUS PROGRESS
+    public function getStatusProgress($case_id)
+    {
+        $this->db->select("DCP_CASE_ID, 
+        DCP_SEQ, 
+        TO_CHAR(DCP_STATUS_DATE, 'DD/MM/YYYY') AS DCP_STATUS_DATE2, 
+        DCP_STATUS,
+        DCP_NOTES");
+        $this->db->from("DISC_CASE_PROGRESS");
+        $this->db->where("DCP_CASE_ID", $case_id);
+        $this->db->order_by("DCP_SEQ");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // GET DCP SEQ
+    public function getDcpSeq($case_id)
+    {
+        $this->db->select("COALESCE(MAX(DCP_SEQ),0) + 1 AS DCP_SEQ2");
+        $this->db->from("DISC_CASE_PROGRESS");
+        $this->db->where("DCP_CASE_ID", $case_id);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // INSERT DCP 2
+    public function insertDcp2($case_id, $form, $seq_no) 
+    {
+        $curr_date = "SYSDATE";
+        $curr_usr_id = $this->staff_id;
+        
+        $data = array(
+            "DCP_CASE_ID" => $case_id,
+            "DCP_SEQ" => $seq_no,
+            "DCP_STATUS" => $form['status'],
+            "DCP_NOTES" => $form['status_desc'],
+            "DCP_ENTER_BY" => $curr_usr_id
+        );
+
+        if(!empty($form['status_date'])) {
+            $date = "TO_DATE('".$form['status_date']."', 'DD/MM/YYYY')";
+            $this->db->set("DCP_STATUS_DATE", $date, false);
+        }
+        
+        $this->db->set("DCP_ENTER_DATE", $curr_date, false);
+
+        return $this->db->insert("DISC_CASE_PROGRESS", $data);
+    }
+
+    // STATUS DESC
+    public function getStatusDesc($sts_code)
+    {
+        $this->db->select("SM_STATUS_RANK, SM_STATUS_CODE, SM_STATUS_DESC");
+        $this->db->from("STATUS_MAIN");
+        $this->db->where("SM_STATUS_CODE", $sts_code);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // STATUS DESC
+    public function getDcpDetl($case_id, $status_cs)
+    {
+        $this->db->select("DCP_CASE_ID, DCP_STATUS");
+        $this->db->from("DISC_CASE_PROGRESS");
+        $this->db->where("DCP_CASE_ID", $case_id);
+        $this->db->where("DCP_STATUS", $status_cs);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    /*===========================================================
+       CASE STATISTIC QUERY - AFF009
+    =============================================================*/
+
+    // CASE STATISTIC LIST 
+    public function getCaseStatList($year_f, $case_dept_f, $case_type_f, $case_sts_f)
+    {
+        $this->db->select("DCM_CASE_YEAR,
+        DCM_DEPT, 
+        DCM_CAT_CODE,
+        CASE DCM_CAT_CODE
+        WHEN 'DISCIPLINARY' THEN 'Disciplinary'
+        WHEN 'ABSENCE' THEN 'Absence From Duty'
+        WHEN 'ASSET_LOSS' THEN 'Asset Loss'
+        WHEN 'INQUIRY_SHOWCAUSE' THEN 'Inquiry'
+        END AS DCM_CAT_CODE_DESC,
+        DCM_STATUS, 
+        TOTAL_CASE");
+        $this->db->from("V_STAFF_CAT_DISC");
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        }
+        if(!empty($case_dept_f)) {
+            $this->db->where("DCM_DEPT", $case_dept_f);
+        }
+        if(!empty($case_type_f)) {
+            $this->db->where("DCM_CAT_CODE", $case_type_f);
+        }
+        if(!empty($case_sts_f)) {
+            $this->db->where("DCM_STATUS", $case_sts_f);
+        }
+
+        $this->db->order_by("DCM_CASE_YEAR DESC, DCM_CAT_CODE");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // GET ADMIN DEPT
+    public function getDiscAdminDeptCode() 
+    {
+		$sID = $this->staff_id;
+		
+        $this->db->select('HP_PARM_DESC AS PARM_DESC');
+        $this->db->from('HRADMIN_PARMS');
+        $this->db->join('STAFF_MAIN','SM_DEPT_CODE = UPPER(TRIM(HP_PARM_DESC))');
+        $this->db->where('HP_PARM_CODE', 'DISCIPLINARY_ADM_DEPT_CODE');
+        $this->db->where('SM_STAFF_ID', $sID);
+        $query = $this->db->get();
+		
+        if ($query->num_rows() > 0) {
+            if ($query->row()->PARM_DESC == '' or $query->row()->PARM_DESC == null){
+                return '';
+            }else{
+                return $query->row()->PARM_DESC;
+            }
+        }
+		
+        return '';
+    }
+
+    // DEPT LIST
+    public function getCsDept($hrd, $hrd2, $isAdmin)
+    {
+        $usn = $this->username;
+
+        // echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
+
+        $this->db->select("DM_DEPT_CODE, DM_DEPT_DESC, DM_DEPT_CODE||' - '||DM_DEPT_DESC AS DM_DEPT_CODE_DESC");
+        $this->db->from("DEPARTMENT_MAIN, STAFF_MAIN");
+        if($isAdmin == 1) {
+            $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$usn')");
+            $this->db->where("DM_STATUS = 'ACTIVE'");
+            $this->db->where("DM_LEVEL <= 2");
+            $this->db->where("((SM_DEPT_CODE = '$hrd' OR SM_DEPT_CODE <> '$hrd' AND DM_DEPT_CODE = SM_DEPT_CODE)
+            OR (SM_DEPT_CODE = '$hrd2' OR SM_DEPT_CODE <> '$hrd2' AND DM_DEPT_CODE = SM_DEPT_CODE))");
+            $this->db->order_by("DM_DEPT_CODE");
+        } elseif ($isAdmin == 0) {
+            $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$usn')");
+            $this->db->where("DM_DEPT_CODE = SM_DEPT_CODE");
+        }
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // DEPT CODE 1
+    public function getDeptCode1()
+    {
+        $this->db->select("DM_DEPT_CODE");
+        $this->db->from("DEPARTMENT_MAIN");
+        $this->db->where("DM_DEPT_CODE = 'BG'");
+
+        $query = $this->db->get();
+        
+        if ($query->num_rows() > 0) {
+            if ($query->row()->DM_DEPT_CODE == '' or $query->row()->DM_DEPT_CODE == null){
+                return '';
+            }else{
+                return $query->row()->DM_DEPT_CODE;
+            }
+        }
+		
+        return '';
+    }
+
+    // DEPT CODE 2
+    public function getDeptCode2()
+    {
+        $this->db->select("DM_DEPT_CODE");
+        $this->db->from("DEPARTMENT_MAIN");
+        $this->db->where("DM_DEPT_CODE = 'BSM'");
+
+        $query = $this->db->get();
+        
+        if ($query->num_rows() > 0) {
+            if ($query->row()->DM_DEPT_CODE == '' or $query->row()->DM_DEPT_CODE == null){
+                return '';
+            }else{
+                return $query->row()->DM_DEPT_CODE;
+            }
+        }
+		
+        return '';
+    }
+
+    // GET CURRENT DEFAULT USER DEPARTMENT - STAFF MAIN
+    public function getCurUserDept($staffID = null) 
+    {
+
+        $curUsername = $this->username;
+
+        $this->db->select("SM_STAFF_ID, SM_STAFF_NAME, SM_DEPT_CODE, SM_EMAIL_ADDR");
+        $this->db->from("STAFF_MAIN");
+
+        if(empty($staffID)) {
+            $this->db->where("SM_APPS_USERNAME", $curUsername);
+        } else {
+            $this->db->where("SM_STAFF_ID", $staffID);
+        }
+        
+        $q = $this->db->get();
+        return $q->row();
+    }
+
+    // CASE STATUS LIST 2
+    public function getCaseStatusList2()
+    {
+        $this->db->select("SM_STATUS_CODE,
+        SM_STATUS_DESC,
+        SM_STATUS_RANK,
+        SM_UPDATABLE,
+        '('||SM_STATUS_RANK||') '||SM_STATUS_CODE||' - '|| SM_STATUS_DESC AS SM_STATUS_CODE_DESC");
+        $this->db->from("STATUS_MAIN");
+        $this->db->where("SM_MODULE_CODE = 'HRA_AF' AND SM_FUNCTION = 'DISCIPLINARY'");
+        $this->db->order_by("SM_STATUS_RANK");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // CASE LIST
+    public function getCsDetlList($case_year, $case_dept, $case_type, $case_sts)
+    {
+        $this->db->select("DCM_CASE_ID, 
+        DCM_CAT_CODE, 
+        DCM_CASE_YEAR,
+        DCM_DEPT,
+        DCM_STATUS,
+        TO_CHAR(DCM_STATUS_DATE, 'DD/MM/YYYY') AS DCM_STATUS_DATE2
+        ");
+        $this->db->from("DISC_CASE_MAIN");
+
+        if(!empty($case_year)) {
+            $this->db->where("DCM_CASE_YEAR", $case_year);
+        } 
+
+        if(!empty($case_dept)) {
+            $this->db->where("DCM_DEPT", $case_dept);
+        }
+
+        if(!empty($case_type)) {
+            $this->db->where("DCM_CAT_CODE", $case_type);
+        }
+
+        if(!empty($case_sts)) {
+            $this->db->where("DCM_STATUS", $case_sts);
+        }
+
+        $this->db->order_by("DCM_CASE_ID");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    /*===========================================================
+       CASE STATISTIC QUERY - AFF009
+    =============================================================*/
+
+    // SEARCH STAFF CASE QUERY
+    public function getStaffSearchQ($staffID)
+    {
+        $this->db->select("SM_STAFF_ID, SM_STAFF_NAME, SM_STAFF_ID ||' - '||SM_STAFF_NAME AS SM_STAFF_ID_NAME,
+        SS_SERVICE_CODE,
+        SS_SERVICE_DESC,
+        SM_DEPT_CODE,
+        DM_DEPT_DESC,
+        SM_IC_NO,
+        SS_STATUS_DESC");
+        $this->db->from("STAFF_MAIN, SERVICE_SCHEME, DEPARTMENT_MAIN, STAFF_STATUS");
+        // $this->db->join("STAFF_STATUS", "SS_STATUS_CODE = SM_STAFF_STATUS");
+        $this->db->where("SM_JOB_CODE = SS_SERVICE_CODE");
+        $this->db->where("SM_DEPT_CODE = DM_DEPT_CODE");
+        $this->db->where("SS_STATUS_CODE = SM_STAFF_STATUS");
+        $this->db->where("SM_STAFF_TYPE = 'STAFF'");
+        // $this->db->where("SS_STATUS_STS = 'ACTIVE'");
+
+        $this->db->where("(UPPER(SM_STAFF_ID) LIKE UPPER('%$staffID%') OR UPPER(SM_STAFF_NAME) LIKE UPPER('%$staffID%'))");
+        $this->db->order_by("2");
+
+        $q = $this->db->get();
+        return $q->result();
+    }
+
+    /*===========================================================
+       CASE QUERY BY STAFF - AFF014
+    =============================================================*/
+
+    // CASE QUERY STAFF LIST
+    public function getCaseStaffListQ($staff_id)
+    {
+        $this->db->select("VSDL_CASE_ID,
+        VSDL_CAT_CODE,
+        VSDL_CASE_YEAR,
+        VSDL_STAFF_ID,
+        VSDL_NAME,
+        VSDL_GUILTY,
+        CASE VSDL_GUILTY 
+        WHEN 'Y' THEN 'Yes'
+        WHEN 'N' THEN 'No'
+        WHEN '' THEN ''
+        END AS VSDL_GUILTY2,
+        VSDL_STATUS");
+        $this->db->from("V_STAFF_DISC_LIST");
+        $this->db->join("DISC_CASE_SUSPECT", "ON DCS_CASE_ID = VSDL_CASE_ID AND DCS_STAFF_ID = VSDL_STAFF_ID");
+        $this->db->where("VSDL_STAFF_ID", $staff_id);
+        $this->db->order_by("VSDL_STATUS DESC, VSDL_CASE_ID");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
+
+    // GET REF NO DISCIPLINARY / ABSENCE
+    public function getRefNo1($case_id, $sid)
+    {
+        $this->db->select("DCS_REF");
+        $this->db->from("DISC_CASE_SUSPECT");
+        $this->db->where("DCS_CASE_ID", $case_id);
+        $this->db->where("DCS_STAFF_ID", $sid);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    // GET REF NO INQUIRY_SHOWCAUSE / ASSET_LOSS
+    public function getRefNo2($case_id, $sid)
+    {
+        $this->db->select("DCL_REF_CODE");
+        $this->db->from("DISC_CASE_LOSTREPORT, DISC_CASE_SUSPECT");
+        $this->db->where("DCL_CASE_ID", $case_id);
+        $this->db->where("DCS_CASE_ID = DCL_CASE_ID");
+        $this->db->where("DCS_STAFF_ID", $sid);
+
+        $q = $this->db->get();
+        
+        return $q->row();
+    }
+
+    /*===========================================================
+       STAFF DISCIPLINARY REPORTS - AFF008
+    =============================================================*/
+
+    // GET CASE STATUS LIST REPORT
+    public function getCaseStatusRep()
+    {
+        $this->db->select("SM_STATUS_DESC, 
+        SM_STATUS_CODE,
+        SM_STATUS_RANK,
+        '('||SM_STATUS_RANK||') '||SM_STATUS_CODE||' - '||SM_STATUS_DESC AS SM_STATUS_CODE_DESC");
+        $this->db->from("STATUS_MAIN");
+        $this->db->where("SM_MODULE_CODE = 'HRA_AF'");
+        $this->db->where("SM_FUNCTION = 'DISCIPLINARY'");
+        $this->db->order_by("SM_STATUS_RANK");
+
+        $q = $this->db->get();
+        
+        return $q->result();
+    }
 }

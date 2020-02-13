@@ -118,7 +118,8 @@
 	------------------------------------------*/
 
 	// POPULATE DISCIPLINARY CASE REPORT ENTRY
-	$('#rp_ent_disc').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	// $('#rp_ent_disc').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	show_loading();
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('csRpEntDisc')?>',
@@ -129,6 +130,7 @@
 			rp_disc_row = $('#tbl_rp_disc_list').DataTable({
 				"ordering":false,
 			});
+			hide_loading();
 		}
 	});		
 

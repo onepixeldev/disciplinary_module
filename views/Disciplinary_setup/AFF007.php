@@ -130,13 +130,18 @@
 	-----------------------------*/
 
 	// POPULATE KUMPULAN JAWATAN PERKHIDMATAN
-	$('#spg_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	// $('#spg_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('svcPosGroup')?>',
 		data: '',
+		beforeSend: function() {
+			show_loading();
+		},
 		success: function(res) {
 			$('#spg_setup').html(res);
+			hide_loading();
 
 			disc_row = $('#tbl_svc_pos_grp_list').DataTable({
 				"ordering":false,
@@ -147,13 +152,17 @@
 	});	
 
     // POPULATE KATEGORI TINDAKAN
-    $('#ac_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+    // $('#ac_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('actCategory')?>',
 		data: '',
+		beforeSend: function() {
+			show_loading();
+		},
 		success: function(res) {
 			$('#ac_setup').html(res);
+			hide_loading();
 
 			disc_row = $('#tbl_ac_list').DataTable({
 				"ordering":false,
@@ -164,13 +173,17 @@
 	});
 
     // POPULATE STATUS KES
-    $('#cs_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+    // $('#cs_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('caseStatus')?>',
 		data: '',
+		beforeSend: function() {
+			show_loading();
+		},
 		success: function(res) {
 			$('#cs_setup').html(res);
+			hide_loading();
 
 			disc_row = $('#tbl_cs_list').DataTable({
 				"ordering":false,
@@ -181,13 +194,17 @@
 	});	
 
     // POPULATE JENIS HUKUMAN
-    $('#top_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+    // $('#top_setup').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('typePunishment')?>',
 		data: '',
+		beforeSend: function() {
+			show_loading();
+		},
 		success: function(res) {
 			$('#top_setup').html(res);
+			hide_loading();
 
 			disc_row = $('#tbl_top_list').DataTable({
 				"ordering":false,

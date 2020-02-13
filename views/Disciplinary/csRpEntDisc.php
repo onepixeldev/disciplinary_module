@@ -9,6 +9,7 @@
 		<thead>
             <tr>
                 <th class="text-center col-md-2">Case ID</th>
+                <th class="text-center col-md-1">Reference File</th>
                 <th class="text-center col-md-1">Staff ID</th>
                 <th class="text-center col-md-4">Name</th>
                 <th class="text-center col-md-1">Category</th>
@@ -24,6 +25,7 @@
 					echo '
                     <tr>
                         <td class="text-center code">'.$rdl->DCM_CASE_ID.'</td>
+                        <td class="text-center">'.$rdl->DCS_REF.'</td>
                         <td class="text-center sid">'.$rdl->DCS_STAFF_ID.'</td>
 						<td class="text-left name">'.$rdl->SM_STAFF_NAME.'</td>
                         <td class="text-center">'.$rdl->DCM_CAT_CODE.'</td>

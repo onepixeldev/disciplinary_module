@@ -1,5 +1,5 @@
 <div class="modal-header btn-primary">
-    <h4 class="modal-title txt-color-white" id="myModalLabel">Result</h4>
+    <h4 class="modal-title txt-color-white" id="myModalLabel">Decision</h4>
 </div>
 <p>
 <div class="text-right">

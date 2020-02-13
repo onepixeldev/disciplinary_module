@@ -153,7 +153,8 @@
 	------------------------------------------*/
 
 	// POPULATE ASSET LOSS CASE REPORT ENTRY
-	$('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	// $('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	show_loading();
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
@@ -164,6 +165,7 @@
 			rp_al_row = $('#tbl_rp_al_list').DataTable({
 				"ordering":false,
 			});
+			hide_loading();
 		}
 	});		
 
@@ -196,7 +198,7 @@
         
         if(it_type == 'MONEY' && it_type != '') {
             $('#aForm').removeClass('hidden');
-            $('#bForm').addClass('hidden');
+			$('#bForm').addClass('hidden');
         } else if (it_type != 'MONEY' && it_type != '') {
             $('#bForm').removeClass('hidden');
             $('#aForm').addClass('hidden');
@@ -313,7 +315,7 @@
 	
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('searchStaffMd')?>',
+			url: '<?php echo $this->lib->class_url('searchStaffMd2')?>',
 			data: '',
 			success: function(res) {
 				$('#myModalis .modal-content').html(res);
@@ -433,6 +435,7 @@
 								if(it_type == 'MONEY' && it_type != '') {
 									$('#aForm').removeClass('hidden');
 									$('#bForm').addClass('hidden');
+									$('#cs_rp_form_al .search_staff').attr('disabled', 'disabled');
 								} else if (it_type != 'MONEY' && it_type != '') {
 									$('#bForm').removeClass('hidden');
 									$('#aForm').addClass('hidden');
@@ -499,6 +502,7 @@
 				if(it_type == 'MONEY' && it_type != '') {
 					$('#aForm').removeClass('hidden');
 					$('#bForm').addClass('hidden');
+					$('#cs_rp_form_al .search_staff').attr('disabled', 'disabled');
 				} else if (it_type != 'MONEY' && it_type != '') {
 					$('#bForm').removeClass('hidden');
 					$('#aForm').addClass('hidden');
@@ -601,6 +605,7 @@
 								if(it_type == 'MONEY' && it_type != '') {
 									$('#aForm').removeClass('hidden');
 									$('#bForm').addClass('hidden');
+									$('#cs_rp_form_al .search_staff').attr('disabled', 'disabled');
 								} else if (it_type != 'MONEY' && it_type != '') {
 									$('#bForm').removeClass('hidden');
 									$('#aForm').addClass('hidden');
@@ -1089,21 +1094,27 @@
 							if (res.sts==1) {
 								hide_loading();
 								// COMMITTEE
-								$.ajax({
-									type: 'POST',
-									url: '<?php echo $this->lib->class_url('comCaseAl')?>',
-									data: {'case_id':res.case_id},
-									beforeSend: function() {
-										$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
-									},
-									success: function(res) {
-										$('#cs_rp_form_cm').html(res);
+								// $.ajax({
+								// 	type: 'POST',
+								// 	url: '<?php echo $this->lib->class_url('comCaseAl')?>',
+								// 	data: {'case_id':res.case_id},
+								// 	beforeSend: function() {
+								// 		$('#cs_rp_form_cm').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								// 	},
+								// 	success: function(res) {
+								// 		$('#cs_rp_form_cm').html(res);
 
-										rp_al_row = $('#tbl_cl_list').DataTable({
-											"ordering":false,
-										});
-									}
+								// 		rp_al_row = $('#tbl_cl_list').DataTable({
+								// 			"ordering":false,
+								// 		});
+								// 	}
+								// });
+								$.alert({
+									title: 'Success!',
+									content: res.msg,
+									type: 'green',
 								});
+								thisBtn.parents('tr').fadeOut().delay(1000).remove();
 							} else {
 								hide_loading();
 								$.alert({

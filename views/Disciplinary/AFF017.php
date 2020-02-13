@@ -127,7 +127,6 @@
 <script>
 	var rp_iq_row = '';
 	var stf_row = '';
-	var asset_row = '';
 	
 	$(document).ready(function(){
 		$("#myModalis").draggable({
@@ -153,7 +152,8 @@
 	------------------------------------------*/
 
 	// POPULATE INQUIRY CASE REPORT ENTRY
-	$('#rp_ent_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	// $('#rp_ent_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	show_loading();
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('csRpEntIQ')?>',
@@ -164,6 +164,7 @@
 			rp_iq_row = $('#tbl_rp_iq_list').DataTable({
 				"ordering":false,
 			});
+			hide_loading();
 		}
 	});		
 
@@ -185,12 +186,13 @@
 
 				$('#cs_rp_form_cm_iq').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
 				$('#cs_rp_form_sp').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
+				$('#cs_rp_form_sp_iq').html('<p><table class="table table-bordered table-hover"><thead><tr> <th class="text-center">Please Add Record or click Edit button from Case Report tab</th></tr></thead></table></p>');
 			}
 		});
     });
 
 	// SAVE ADD CASE REPORT ENTRY (INQUIRY)
-	$('#cs_rp_form_sp_iq').on('click', '.add_rp_iq_frm', function (e) {
+	$('#cs_rp_form_iq').on('click', '.add_rp_iq_frm', function (e) {
 		e.preventDefault();
 		var data = $('#addRpEntFmIQ').serialize();
 		msg.wait('#addRpEntFmIQAlert');
@@ -225,6 +227,50 @@
 							}
 						});
 
+						// ENTRY FORM
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('editCaseIQForm')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_iq').html(res);
+							}
+						});
+
+						// COMMITTEE 
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('editCommIQForm')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_cm_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_cm_iq').html(res);
+							}
+						});
+
+						// SUSPECT 
+						$.ajax({
+							type: 'POST',
+							url: '<?php echo $this->lib->class_url('IQSuspectList')?>',
+							data: {'case_id':res.case_id},
+							beforeSend: function() {
+								$('#cs_rp_form_sp_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+							},
+							success: function(res) {
+								$('#cs_rp_form_sp_iq').html(res);
+
+								rp_iq_row = $('#tbl_sp_iq_list').DataTable({
+												"ordering":false,
+											});
+							}
+						});
+
+						$('.nav-tabs li:eq(2) a').tab('show');
 					}, 1500);
 				} else {
 					$('.btn').removeAttr('disabled');
@@ -243,6 +289,8 @@
 		var thisBtn = $(this);
 		var td = thisBtn.closest("tr");
 		var code = td.find(".code").text();
+
+		$('.nav-tabs li:eq(1) a').tab('show');
 		
 		// ENTRY FORM
 		$.ajax({
@@ -251,7 +299,6 @@
 			data: {'case_id':code},
 			beforeSend: function() {
 				$('#cs_rp_form_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
-				$('.nav-tabs li:eq(1) a').tab('show');
 			},
 			success: function(res) {
 				$('#cs_rp_form_iq').html(res);
@@ -265,7 +312,6 @@
 			data: {'case_id':code},
 			beforeSend: function() {
 				$('#cs_rp_form_cm_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
-				$('.nav-tabs li:eq(1) a').tab('show');
 			},
 			success: function(res) {
 				$('#cs_rp_form_cm_iq').html(res);
@@ -273,85 +319,72 @@
 		});
 
 		// SUSPECT 
-		// $.ajax({
-		// 	type: 'POST',
-		// 	url: '<?php echo $this->lib->class_url('editCaseIQForm')?>',
-		// 	data: {'case_id':code},
-		// 	beforeSend: function() {
-		// 		$('#cs_rp_form_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
-		// 		$('.nav-tabs li:eq(1) a').tab('show');
-		// 	},
-		// 	success: function(res) {
-		// 		$('#cs_rp_form_iq').html(res);
-		// 	}
-		// });
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('IQSuspectList')?>',
+			data: {'case_id':code},
+			beforeSend: function() {
+				$('#cs_rp_form_sp_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+			},
+			success: function(res) {
+				$('#cs_rp_form_sp_iq').html(res);
+
+				rp_iq_row = $('#tbl_sp_iq_list').DataTable({
+								"ordering":false,
+							});
+			}
+		});
 	});
 
-	// SAVE UPDATE CASE REPORT ENTRY (AL)
-	$('#cs_rp_form_sp_iq').on('click', '.upd_rp_al_frm', function (e) {
+	// SAVE UPDATE CASE REPORT ENTRY (INQUIRY)
+	$('#cs_rp_form_iq').on('click', '.edit_rp_iq_frm', function (e) {
 		e.preventDefault();
-		var data = $('#updRpEntFmAL').serialize();
-		msg.wait('#updRpEntFmALAlert');
-		msg.wait('#updRpEntFmALFooter');
+		var data = $('#editRpEntFmIQ').serialize();
+		msg.wait('#editRpEntFmIQAlert');
+		msg.wait('#editRpEntFmIQAlertFooter');
 		// alert(data);
 		
 		$('.btn').attr('disabled', 'disabled');
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('saveEditRpAlFrm')?>',
+			url: '<?php echo $this->lib->class_url('saveEditRpIQFrm')?>',
 			data: data,
 			dataType: 'JSON',
 			success: function(res) {
-				msg.show(res.msg, res.alert, '#updRpEntFmALAlert');
-				msg.show(res.msg, res.alert, '#updRpEntFmALFooter');
+				msg.show(res.msg, res.alert, '#editRpEntFmIQAlert');
+				msg.show(res.msg, res.alert, '#editRpEntFmIQAlertFooter');
 
 				if (res.sts == 1) {
 				
 					setTimeout(function () {
 						$('.btn').removeAttr('disabled');
 						
-						// REFRESH CASE REPORT
-						$('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+						// REPOPULATE INQUIRY CASE REPORT ENTRY
+						$('#rp_ent_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 						$.ajax({
 							type: 'POST',
-							url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
+							url: '<?php echo $this->lib->class_url('csRpEntIQ')?>',
 							data: '',
 							success: function(res) {
-								$('#rp_ent_al').html(res);
+								$('#rp_ent_iq').html(res);
 
-								rp_iq_row = $('#tbl_rp_al_list').DataTable({
+								rp_iq_row = $('#tbl_rp_iq_list').DataTable({
 									"ordering":false,
 								});
 							}
-						});	
-						
-						// CHANGE UPDATE FORM
+						});
+
+						// ENTRY FORM
 						$.ajax({
 							type: 'POST',
-							url: '<?php echo $this->lib->class_url('editCaseALForm')?>',
+							url: '<?php echo $this->lib->class_url('editCaseIQForm')?>',
 							data: {'case_id':res.case_id},
 							beforeSend: function() {
-								$('#cs_rp_form_sp_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								$('#cs_rp_form_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 								$('.nav-tabs li:eq(1) a').tab('show');
 							},
 							success: function(res) {
-								$('#cs_rp_form_sp_iq').html(res);
-
-								var it_type = $('#itemType').val();
-								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
-								
-								if(it_type == 'MONEY' && it_type != '') {
-									$('#aForm').removeClass('hidden');
-									$('#bForm').addClass('hidden');
-								} else if (it_type != 'MONEY' && it_type != '') {
-									$('#bForm').removeClass('hidden');
-									$('#aForm').addClass('hidden');
-								} else if (it_type == '') {
-									$('#aForm').addClass('hidden');
-									$('#bForm').addClass('hidden');
-								}
-
-								$('#loaderItType').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>').hide();
+								$('#cs_rp_form_iq').html(res);
 							}
 						});
 
@@ -368,7 +401,7 @@
 		});	
 	});
 
-	// DELETE CASE REPORT ENTRY (AL)
+	// DELETE CASE REPORT ENTRY (INQUIRY)
 	$('#rp_ent_al').on('click','.del_rp_afd', function() {
 		var thisBtn = $(this);
 		var td = thisBtn.closest("tr");
@@ -502,7 +535,7 @@
 	});
 
 	// SEARCH STAFF
-	$('#myModalis').on('click', '.search_staff_cm', function () {
+	$('#myModalis').on('click', '.search_staff_cm2', function () {
         var case_id = $('#myModalis #case_id').val();
 		var staff_id = $('#myModalis #staff_id').val();
 		search_trigger = 1;
@@ -603,7 +636,7 @@
     });
 
 	// DELETE COMMITTEE MEMBER
-	$('#cs_rp_form_cm').on('click','.del_cmm', function() {
+	$('#cs_rp_form_cm_iq').on('click','.del_cmm2', function() {
 		var thisBtn = $(this);
 		var td = thisBtn.parent().siblings();
 		var seq = td.eq(0).html().trim();
@@ -620,7 +653,7 @@
 					show_loading();
 					$.ajax({
 						type: 'POST',
-						url: '<?php echo $this->lib->class_url('delCmmMem')?>',
+						url: '<?php echo $this->lib->class_url('delCmmIQ')?>',
 						data: {'seq':seq, 'case_id':case_id},
 						dataType: 'JSON',
 						success: function(res) {
@@ -631,7 +664,20 @@
 									content: res.msg,
 									type: 'green',
 								});
-								thisBtn.parents('tr').fadeOut().delay(1000).remove();
+
+								// COMMITTEE 
+								$.ajax({
+									type: 'POST',
+									url: '<?php echo $this->lib->class_url('editCommIQForm')?>',
+									data: {'case_id':res.case_id},
+									beforeSend: function() {
+										$('#cs_rp_form_cm_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+										$('.nav-tabs li:eq(2) a').tab('show');
+									},
+									success: function(res) {
+										$('#cs_rp_form_cm_iq').html(res);
+									}
+								});
 							} else {
 								hide_loading();
 								$.alert({
@@ -653,11 +699,11 @@
 
 
 	/*----------------------------------------
-	TAB 4 - COMMITTEE
+	TAB 4 - SUSPECT DETAIL
 	------------------------------------------*/
 
 	// ADD SUSPECT DETL MODAL
-	$('#cs_rp_form_sp').on('click','.add_sp_al_btn', function(){
+	$('#cs_rp_form_sp_iq').on('click','.add_sp_al_btn2', function(){
 
 		var case_id = $(this).val();
 
@@ -667,7 +713,7 @@
 
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('addSuspectDetlAL')?>',
+			url: '<?php echo $this->lib->class_url('addSuspectDetlIQ')?>',
 			data: {'case_id':case_id},
 			success: function(res) {
 				$('#myModalis .modal-content').html(res);
@@ -676,7 +722,7 @@
 	});
 
 	// SEARCH STAFF
-	$('#myModalis').on('click', '.search_staff_sp', function () {
+	$('#myModalis').on('click', '.search_staff_sp2', function () {
         var case_id = $('#myModalis #case_id').val();
 		var staff_id = $('#myModalis #staff_id').val();
 		search_trigger = 1;
@@ -693,7 +739,7 @@
 	
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('addSuspectDetlAL')?>',
+			url: '<?php echo $this->lib->class_url('addSuspectDetlIQ')?>',
 			data: {'staff_id':staff_id, 'search_trigger':search_trigger, 'case_id':case_id},
 			success: function(res) {
 				$('#myModalis .modal-content').html(res);
@@ -707,7 +753,7 @@
 	});
 
 	// SELECT STAFF ID
-	$('#myModalis').on('click', '.select_staff_id_sp', function () {
+	$('#myModalis').on('click', '.select_staff_id_sp2', function () {
 		show_loading();
 		var thisBtn = $(this);
 		var td = thisBtn.parent().siblings();
@@ -736,7 +782,7 @@
 	});
 
 	// SAVE SUSPECT DETAIL
-	$('#myModalis').on('click', '.save_sp_detl', function (e) { 
+	$('#myModalis').on('click', '.save_sp_detl2', function (e) { 
 		e.preventDefault();
         var data = $('#spDetlForm').serialize();
         msg.wait('#spDetlFormAlert');
@@ -745,7 +791,7 @@
 		$('.btn').attr('disabled', 'disabled');
 		$.ajax({
 			type: 'POST',
-			url: '<?php echo $this->lib->class_url('saveSpDetl')?>',
+			url: '<?php echo $this->lib->class_url('saveSpDetlIQ')?>',
 			data: data,
 			dataType: 'JSON',
 			success: function(res) {
@@ -757,20 +803,20 @@
 					setTimeout(function () {
 						$('#myModalis').modal('hide');
 
-						// REFRESH SUSPECT LIST
+						// SUSPECT 
 						$.ajax({
 							type: 'POST',
-							url: '<?php echo $this->lib->class_url('ALSuspectList')?>',
+							url: '<?php echo $this->lib->class_url('IQSuspectList')?>',
 							data: {'case_id':res.case_id},
 							beforeSend: function() {
-								$('#cs_rp_form_sp').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+								$('#cs_rp_form_sp_iq').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
 							},
 							success: function(res) {
-								$('#cs_rp_form_sp').html(res);
+								$('#cs_rp_form_sp_iq').html(res);
 
-								rp_iq_row = $('#tbl_sp_al_list').DataTable({
-									"ordering":false,
-								});
+								rp_iq_row = $('#tbl_sp_iq_list').DataTable({
+												"ordering":false,
+											});
 							}
 						});
 						
@@ -789,7 +835,7 @@
     });
 
 	// DELETE SUSPECT DETAIL
-	$('#cs_rp_form_sp').on('click','.del_sp', function() {
+	$('#cs_rp_form_sp_iq').on('click','.del_sp_iq', function() {
 		var thisBtn = $(this);
 		var td = thisBtn.parent().siblings();
 		var staff_id = td.eq(0).html().trim();
@@ -805,7 +851,7 @@
 					show_loading();
 					$.ajax({
 						type: 'POST',
-						url: '<?php echo $this->lib->class_url('delSpDetl')?>',
+						url: '<?php echo $this->lib->class_url('delSpDetlIQ')?>',
 						data: {'case_id':case_id, 'staff_id':staff_id},
 						dataType: 'JSON',
 						success: function(res) {

@@ -118,7 +118,8 @@
 	------------------------------------------*/
 
 	// POPULATE ABSENCE FROM DUTY CASE REPORT ENTRY
-	$('#rp_ent_afd').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	// $('#rp_ent_afd').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
+	show_loading();
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('csRpEntAFD')?>',
@@ -129,6 +130,7 @@
 			rp_afd_row = $('#tbl_rp_afd_list').DataTable({
 				"ordering":false,
 			});
+			hide_loading();
 		}
 	});		
 

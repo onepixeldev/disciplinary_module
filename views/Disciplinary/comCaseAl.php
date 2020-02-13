@@ -36,7 +36,13 @@
 					</tr>
                     ';
 				}
-			} 
+			} else {
+                echo '
+                    <tr>
+                        <td class="text-center" colspan="5">No record found.</td>
+					</tr>
+                    ';
+            }
 		?>
 		</tbody>
 		</table>	
@@ -66,7 +72,7 @@
 
     <div class="form-group">
         <div class="col-md-2"></div>
-        <label class="col-md-4 control-label text-left"><b>Committee Appointment Date</b></label>
+        <label class="col-md-4 control-label text-left"><b>Committee Appointment Date</b> <b><font color="red">* </font></b></label>
     </div>
     <div class="form-group">
         <div class="col-md-2"></div>

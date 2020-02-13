@@ -4,7 +4,7 @@
     </div>
     
     <div id="editRpEntFmAFDAlert">
-        <b>Note : </b> ( <b><font color="red">*</font></b> ) <b><font color="red">compulsory fields</font></b><br>&nbsp; <span id="note"></span>
+        <!--<b>Note : </b> ( <b><font color="red">*</font></b> ) <b><font color="red">compulsory fields</font></b><br>&nbsp; <span id="note"></span>-->
     </div>
     <div class="alert alert-info fade in">
         <b>Officer Details</b>
@@ -38,7 +38,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Staff ID <b><font color="red">* </font></b></label>
+        <label class="col-md-2 control-label">Staff ID</label>
         <div class="col-md-2">
             <input name="form[staff_id]" class="form-control" type="text" id="staff_id" value="<?php echo $rp_afd_detl->DCS_STAFF_ID?>" readonly>
         </div>
@@ -47,9 +47,9 @@
             <input name="" class="form-control" type="text" value="<?php echo $stf_name?>" id="staff_name" value="<?php echo $stf_name?>" readonly>
         </div>
 
-        <div class="col-md-1">
+        <!--<div class="col-md-1">
             <button type="button" class="btn btn-primary search_staff"><i class="fa fa-search"></i> Search</button>
-        </div>
+        </div>-->
     </div>
 
     <div class="form-group">

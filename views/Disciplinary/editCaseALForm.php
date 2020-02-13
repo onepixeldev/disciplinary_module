@@ -7,7 +7,7 @@
         <b>Note : </b> ( <b><font color="red">*</font></b> ) <b><font color="red">compulsory fields</font></b><br>&nbsp; <span id="note"></span>
     </div>
     <div class="alert alert-info fade in">
-        <b>Officer Details</b>
+        <b>Asset Loss Details</b>
     </div>
     <br>
 
@@ -19,7 +19,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Case Type </label>
+        <label class="col-md-2 control-label">Case Type</label>
         <div class="col-md-4">
             <input name="form[case_type]" class="form-control" type="text" value="<?php echo $rp_al_detl->DCM_CAT_CODE?>" readonly>
         </div>
@@ -135,7 +135,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Staff ID </label>
+        <label class="col-md-2 control-label">Staff ID <b><font color="red">* </font></b></label>
         <div class="col-md-2">
             <input name="form[staff_id]" class="form-control" type="text" value="<?php echo $rp_al_detl->DCL_STAFF_LAST?>" id="staff_id" readonly>
         </div>

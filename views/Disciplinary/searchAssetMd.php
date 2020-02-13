@@ -52,7 +52,7 @@
                                             data-al-desc="'.$al->AIH_ASET_DESC.'"
                                             data-al-sno="'.$al->AIH_SERIAL_NO.'" data-al-brand="'.$al->AIH_BRAND_NAME.'" data-al-quantity="'.$al->AIH_BIL.'"
                                             data-al-icost="'.$al->AIH_INSTALL_COST.'"
-                                            data-al-sid="'.$al->AIH_CUSTODIAN.'"
+                                            data-al-sid="'.$al->SM_STAFF_ID.'"
                                             data-al-sname="'.$al->SM_STAFF_NAME.'"><i class="fa fa-chevron-down"></i> Select</button>
                                         </td>
                                     </tr>
