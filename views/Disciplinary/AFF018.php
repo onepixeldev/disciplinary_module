@@ -46,6 +46,16 @@
                             <div id="myTabContent1" class="tab-content padding-10">
 
 								<div class="tab-pane fade active in" id="s1">
+									<form class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-1"></div>
+                                            <label class="col-md-2 control-label"><b>Case Year</b></label>
+                                            <div class="col-md-2">
+                                                <?php echo form_dropdown('year_f', $case_year_list, $curr_year, 'class="form-control width-50 case_f" id="year_f"')?>
+                                            </div>
+                                        </div>
+                                    </form>
+
 									<div id="rp_ent_al">
 									</div>
                                 </div>
@@ -151,6 +161,7 @@
 	/*----------------------------------------
 	TAB 1 - CASE REPORT ENTRY (ASSET LOSS)
 	------------------------------------------*/
+	var year_f = $('#year_f').val();
 
 	// POPULATE ASSET LOSS CASE REPORT ENTRY
 	// $('#rp_ent_al').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x fa-fw"></i></div>');
@@ -158,7 +169,7 @@
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
-		data: '',
+		data: {'year_f':year_f},
 		success: function(res) {
 			$('#rp_ent_al').html(res);
 
@@ -168,6 +179,27 @@
 			hide_loading();
 		}
 	});		
+
+	// CASE FILTER
+    $('.case_f').change(function(){
+        var year_f = $('#year_f').val();
+        
+        // POPULATE CASE LIST
+        show_loading();
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo $this->lib->class_url('csRpEntAL')?>',
+			data: {'year_f':year_f},
+			success: function(res) {
+				$('#rp_ent_al').html(res);
+
+				rp_al_row = $('#tbl_rp_al_list').DataTable({
+					"ordering":false,
+				});
+				hide_loading();
+			}
+		});	
+    });
 
 	///////////////////////////////////////////////////////
 	// ADD, EDIT, DELETE CASE REPORT ENTRY (AL)
@@ -459,9 +491,9 @@
 							success: function(res) {
 								$('#cs_rp_form_sp').html(res);
 
-								rp_al_row = $('#tbl_sp_al_list').DataTable({
-									"ordering":false,
-								});
+								// rp_al_row = $('#tbl_sp_al_list').DataTable({
+								// 	"ordering":false,
+								// });
 							}
 						});
 
@@ -523,9 +555,9 @@
 					success: function(res) {
 						$('#cs_rp_form_sp').html(res);
 
-						rp_al_row = $('#tbl_sp_al_list').DataTable({
-							"ordering":false,
-						});
+						// rp_al_row = $('#tbl_sp_al_list').DataTable({
+						// 			"ordering":false,
+						// });
 					}
 				});
 
@@ -540,9 +572,9 @@
 					success: function(res) {
 						$('#cs_rp_form_cm').html(res);
 
-						rp_al_row = $('#tbl_cl_list').DataTable({
-							"ordering":false,
-						});
+						// rp_al_row = $('#tbl_cl_list').DataTable({
+						// 	"ordering":false,
+						// });
 					}
 				});
 			}
@@ -793,9 +825,9 @@
 							success: function(res) {
 								$('#cs_rp_form_sp').html(res);
 
-								rp_al_row = $('#tbl_sp_al_list').DataTable({
-									"ordering":false,
-								});
+								// rp_al_row = $('#tbl_sp_al_list').DataTable({
+								// 	"ordering":false,
+								// });
 							}
 						});
 						
@@ -926,9 +958,9 @@
 							success: function(res) {
 								$('#cs_rp_form_cm').html(res);
 
-								rp_al_row = $('#tbl_cl_list').DataTable({
-									"ordering":false,
-								});
+								// rp_al_row = $('#tbl_cl_list').DataTable({
+								// 	"ordering":false,
+								// });
 							}
 						});
 					}, 1000);
@@ -1050,9 +1082,9 @@
 							success: function(res) {
 								$('#cs_rp_form_cm').html(res);
 
-								rp_al_row = $('#tbl_cl_list').DataTable({
-									"ordering":false,
-								});
+								// rp_al_row = $('#tbl_cl_list').DataTable({
+								// 	"ordering":false,
+								// });
 							}
 						});
 						

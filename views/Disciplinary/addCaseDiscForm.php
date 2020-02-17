@@ -127,7 +127,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Rule A605</label>
+        <label class="col-md-2 control-label">Act A605</label>
         <div class="col-md-10">
             <textarea name="form[rule_a605]" placeholder="Rule A605" class="form-control" type="text" rows="4"></textarea>
         </div>
@@ -141,12 +141,12 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Punishment Enforcement Date <b><font color="red">* </font></b></label>
+        <label class="col-md-2 control-label">Punishment Enforcement Date</label>
         <div class="col-md-4">
             <input name="form[punishment_enforcement_date]" placeholder="DD/MM/YYYY" class="form-control dtPicker" type="text">
         </div>
 
-        <label class="col-md-2 control-label">Punishment End Date <b><font color="red">* </font></b></label>
+        <label class="col-md-2 control-label">Punishment End Date</label>
         <div class="col-md-4">
             <input name="form[punishment_end_date]" placeholder="DD/MM/YYYY" class="form-control dtPicker" type="text">
         </div>

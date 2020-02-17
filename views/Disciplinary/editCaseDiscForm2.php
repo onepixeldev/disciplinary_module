@@ -150,7 +150,7 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label">Rule A605</label>
+        <label class="col-md-2 control-label">Act A605</label>
         <div class="col-md-10">
             <textarea name="form[rule_a605]" placeholder="Rule A605" class="form-control" type="text" rows="4"><?php echo $rp_disc_detl->DCS_RULES_A605?></textarea>
         </div>
@@ -164,12 +164,12 @@
     </div>
 
     <div class="form-group">
-        <label class="col-md-2 control-label" style="text-align:left;">Punishment Enforcement Date <b><font color="red">* </font></b></label>
+        <label class="col-md-2 control-label" style="text-align:left;">Punishment Enforcement Date</label>
         <div class="col-md-4">
             <input name="form[punishment_enforcement_date]" placeholder="DD/MM/YYYY" value="<?php echo $rp_disc_detl->DCS_SENTENCE_FROM2?>" class="form-control dtPicker" type="text">
         </div>
 
-        <label class="col-md-2 control-label">Punishment End Date <b><font color="red">* </font></b></label>
+        <label class="col-md-2 control-label">Punishment End Date</label>
         <div class="col-md-4">
             <input name="form[punishment_end_date]" placeholder="DD/MM/YYYY" value="<?php echo $rp_disc_detl->DCS_SENTENCE_TO2?>" class="form-control dtPicker" type="text">
         </div>

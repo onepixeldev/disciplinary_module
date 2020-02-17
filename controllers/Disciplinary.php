@@ -29,25 +29,45 @@ class Disciplinary extends MY_Controller
     // CASE REPORT ENTRY DISCIPLINARY
     public function AFF016()
     {   
-        $this->render();
+        $data['curr_date'] = $this->disc_mdl->getCurDate();
+        $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
+
+        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsDiscYear(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', ' ---Please select--- ');
+
+        $this->render($data);
     }
 
     // CASE REPORT ENTRY ABSENCE FROM DUTY
     public function AFF019()
     {   
-        $this->render();
+        $data['curr_date'] = $this->disc_mdl->getCurDate();
+        $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
+
+        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsAFDYear(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', ' ---Please select--- ');
+
+        $this->render($data);
     }
 
     // CASE REPORT ENTRY ASSET LOSS
     public function AFF018()
     {   
-        $this->render();
+        $data['curr_date'] = $this->disc_mdl->getCurDate();
+        $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
+
+        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsALYear(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', ' ---Please select--- ');
+
+        $this->render($data);
     }
 
     // CASE REPORT ENTRY INQUIRY
     public function AFF017()
     {   
-        $this->render();
+        $data['curr_date'] = $this->disc_mdl->getCurDate();
+        $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
+
+        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsIQYear(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', ' ---Please select--- ');
+
+        $this->render($data);
     }
 
     // CASE UPDATE
@@ -232,8 +252,10 @@ class Disciplinary extends MY_Controller
     // CASE REPORT ENTRY DISCIPLINARY LIST
     public function csRpEntDisc()
     {   
+        $year_f = $this->input->post('year_f', true);
+
         // get available records
-        $data['rp_disc_list'] = $this->disc_mdl->getRpDiscList();
+        $data['rp_disc_list'] = $this->disc_mdl->getRpDiscList($year_f);
 
         $this->render($data);
     }
@@ -357,8 +379,8 @@ class Disciplinary extends MY_Controller
             'status_date' => 'required|max_length[11]',
             'rule_a605' => 'max_length[4000]',
             'punishment_type' => 'max_length[100]',
-            'punishment_enforcement_date' => 'required|max_length[11]',
-            'punishment_end_date' => 'required|max_length[11]'
+            'punishment_enforcement_date' => 'max_length[11]',
+            'punishment_end_date' => 'max_length[11]'
         );
 
         $exclRule = null;
@@ -439,8 +461,8 @@ class Disciplinary extends MY_Controller
             'status_date' => 'required|max_length[11]',
             'rule_a605' => 'max_length[4000]',
             'punishment_type' => 'max_length[100]',
-            'punishment_enforcement_date' => 'required|max_length[11]',
-            'punishment_end_date' => 'required|max_length[11]'
+            'punishment_enforcement_date' => 'max_length[11]',
+            'punishment_end_date' => 'max_length[11]'
         );
 
         $exclRule = null;
@@ -511,8 +533,10 @@ class Disciplinary extends MY_Controller
     // CASE REPORT ENTRY (ABSENCE FROM DUTY) LIST
     public function csRpEntAFD()
     {   
+        $year_f = $this->input->post('year_f', true);
+
         // get available records
-        $data['rp_afd_list'] = $this->disc_mdl->getRpAFDList();
+        $data['rp_afd_list'] = $this->disc_mdl->getRpAFDList($year_f);
 
         $this->render($data);
     }
@@ -721,8 +745,10 @@ class Disciplinary extends MY_Controller
     // CASE REPORT ENTRY (ASSET LOSS) LIST
     public function csRpEntAL()
     {   
+        $year_f = $this->input->post('year_f', true);
+
         // get available records
-        $data['rp_al_list'] = $this->disc_mdl->getRpALList();
+        $data['rp_al_list'] = $this->disc_mdl->getRpALList($year_f);
 
         $this->render($data);
     }
@@ -1236,8 +1262,10 @@ class Disciplinary extends MY_Controller
     // CASE REPORT ENTRY (INQUIRY) LIST
     public function csRpEntIQ()
     {   
+        $year_f = $this->input->post('year_f', true);
+
         // get available records
-        $data['rp_iq_list'] = $this->disc_mdl->getRpIQList();
+        $data['rp_iq_list'] = $this->disc_mdl->getRpIQList($year_f);
 
         $this->render($data);
     }
@@ -1854,8 +1882,8 @@ class Disciplinary extends MY_Controller
             'status_date' => 'required|max_length[11]',
             'rule_a605' => 'max_length[4000]',
             'punishment_type' => 'max_length[100]',
-            'punishment_enforcement_date' => 'required|max_length[11]',
-            'punishment_end_date' => 'required|max_length[11]'
+            'punishment_enforcement_date' => 'max_length[11]',
+            'punishment_end_date' => 'max_length[11]'
         );
 
         $exclRule = null;

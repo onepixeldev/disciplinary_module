@@ -414,8 +414,24 @@ class Disciplinary_model extends MY_Model
        CASE REPORT ENTRY (DISCIPLINARY) - AFF016
     =============================================================*/
 
+    // CASE YEAR LIST
+    public function getCsDiscYear()
+    {
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        WHERE DCM_CAT_CODE = 'DISCIPLINARY'
+        AND DCM_STATUS = 'PRELIMINARY REPORT'
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
+        
+        return $q->result();
+    }
+
     // CASE REPORT ENTRY DISCIPLINARY LIST
-    public function getRpDiscList()
+    public function getRpDiscList($year_f = null)
     {
         $this->db->select("DCM_CASE_ID, 
         DCS_STAFF_ID, 
@@ -434,6 +450,13 @@ class Disciplinary_model extends MY_Model
         $this->db->join("STAFF_MAIN", "DCS_STAFF_ID = SM_STAFF_ID", "LEFT");
         $this->db->where("DCM_CAT_CODE = 'DISCIPLINARY'");
         $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        }
+
+        $this->db->order_by("DCM_CASE_YEAR DESC, DCM_CASE_ID, DCS_STAFF_ID");
+
 
         $q = $this->db->get();
         
@@ -775,11 +798,15 @@ class Disciplinary_model extends MY_Model
         if(!empty($form['punishment_enforcement_date'])) {
             $date = "TO_DATE('".$form['punishment_enforcement_date']."', 'DD/MM/YYYY')";
             $this->db->set("DCS_SENTENCE_FROM", $date, false);
+        } else {
+            $this->db->set("DCS_SENTENCE_FROM", '', true);
         }
 
         if(!empty($form['punishment_end_date'])) {
             $date = "TO_DATE('".$form['punishment_end_date']."', 'DD/MM/YYYY')";
             $this->db->set("DCS_SENTENCE_TO", $date, false);
+        } else {
+            $this->db->set("DCS_SENTENCE_TO", '', true);
         }
         
         $this->db->set("DCS_ENTER_DATE", $curr_date, false);
@@ -822,8 +849,25 @@ class Disciplinary_model extends MY_Model
        CASE REPORT ENTRY (ABSENCE FROM DUTY) - AFF019
     =============================================================*/
 
+    // CASE YEAR LIST
+    public function getCsAFDYear()
+    {
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        WHERE DCM_CAT_CODE = 'ABSENCE'
+        AND DCM_STATUS = 'PRELIMINARY REPORT'
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
+        
+        return $q->result();
+    }
+
+    
     // CASE REPORT ENTRY (ABSENCE FROM DUTY) LIST
-    public function getRpAFDList()
+    public function getRpAFDList($year_f = null)
     {
         $this->db->select("DCM_CASE_ID, 
         DCS_STAFF_ID, 
@@ -842,6 +886,10 @@ class Disciplinary_model extends MY_Model
         $this->db->join("STAFF_MAIN", "DCS_STAFF_ID = SM_STAFF_ID", "LEFT");
         $this->db->where("DCM_CAT_CODE = 'ABSENCE'");
         $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        }
 
         $q = $this->db->get();
         
@@ -1095,8 +1143,24 @@ class Disciplinary_model extends MY_Model
        CASE REPORT ENTRY (ASSET LOSS) - AFF018
     =============================================================*/
 
+    // CASE YEAR LIST
+    public function getCsALYear()
+    {
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        WHERE DCM_CAT_CODE = 'ASSET_LOSS'
+        AND DCM_STATUS = 'PRELIMINARY REPORT'
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
+        
+        return $q->result();
+    }
+
     // CASE REPORT ENTRY (ASSET LOSS) LIST
-    public function getRpALList()
+    public function getRpALList($year_f = null)
     {
         $this->db->select("DCM_CASE_ID, 
         DCM_CAT_CODE, 
@@ -1109,6 +1173,10 @@ class Disciplinary_model extends MY_Model
         $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
         $this->db->where("DCM_CAT_CODE = 'ASSET_LOSS'");
         $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        }
 
         $q = $this->db->get();
         
@@ -1703,8 +1771,24 @@ class Disciplinary_model extends MY_Model
        CASE REPORT ENTRY (INQUIRY) - AFF017
     =============================================================*/
 
+    // CASE YEAR LIST
+    public function getCsIQYear()
+    {
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        WHERE DCM_CAT_CODE = 'INQUIRY_SHOWCAUSE'
+        AND DCM_STATUS = 'PRELIMINARY REPORT'
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
+        
+        return $q->result();
+    }
+
     // CASE REPORT ENTRY (INQUIRY) LIST
-    public function getRpIQList()
+    public function getRpIQList($year_f = null)
     {
         $this->db->select("DCM_CASE_ID, 
         DCM_CAT_CODE, 
@@ -1716,6 +1800,10 @@ class Disciplinary_model extends MY_Model
         $this->db->join("DISC_CASE_LOSTREPORT", "DCM_CASE_ID = DCL_CASE_ID", "LEFT");
         $this->db->where("DCM_CAT_CODE = 'INQUIRY_SHOWCAUSE'");
         $this->db->where("DCM_STATUS = 'PRELIMINARY REPORT'");
+
+        if(!empty($year_f)) {
+            $this->db->where("DCM_CASE_YEAR", $year_f);
+        }
 
         $q = $this->db->get();
         

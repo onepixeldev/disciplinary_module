@@ -3,7 +3,15 @@
     <h4 class="modal-title txt-color-white" id="myModalLabel">Committee Members</h4>
 </div>
 <br>
-
+<form class="form-horizontal" method="post">
+    <div class="form-group">
+        <label class="col-md-2 control-label"><b>Case ID</b></label>
+        <div class="col-md-4">
+            <input name="" class="form-control" type="text" value="<?php echo $case_id?>" readonly>
+        </div>
+    </div>
+</form>
+<br>
 <div class="text-right">
 	<button type="button" class="btn btn-primary btn-sm add_cm_iq_btn" value="<?php echo $case_id?>"><i class="fa fa-plus"></i> Add Record</button>
 </div>

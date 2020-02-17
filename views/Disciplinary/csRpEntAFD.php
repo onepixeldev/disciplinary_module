@@ -31,13 +31,15 @@
                         <td class="text-center">'.$ral->DCM_CAT_CODE.'</td>
                         <td class="text-center">'.$ral->DCM_CASE_YEAR.'</td>
                         <td class="text-center">'.$ral->DCS_GUILTY_DESC.'</td>
-						<td class="text-center">
-                            <div class="btn-group">
+                        <td class="text-center">
+                            <button type="button" class="btn btn-success text-left btn-xs upd_rp_ent" value=""><i class="fa fa-edit"></i> Edit</button>
+
+                            <!--<div class="btn-group">
                                 <button type="button" class="btn btn-xs btn-warning" data-toggle="dropdown"><i class="fa fa-bars"></i> Menu</button>
                                 <div style="background-color:silver;text-align:center;width:5px;" class="dropdown-menu dropdown-menu-right dd_btn">
                                     <button type="button" class="btn btn-success text-left btn-block btn-xs upd_rp_ent" value=""><i class="fa fa-edit"></i> Edit</button>
                                     <button type="button" class="btn btn-danger text-left btn-block btn-xs del_rp_afd" value=""><i class="fa fa-trash"></i> Delete</button>
-                                </div>
+                                </div>-->
                             </div>
 						</td>
 					</tr>
