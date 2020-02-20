@@ -99,6 +99,8 @@ class Disciplinary extends MY_Controller
         $curr_usr_dept = $curr_usr_dept->SM_DEPT_CODE;
         $data['curr_dept'] = '';
 
+        echo "<script>console.log('Debug Objects: " . $curr_usr_dept . "' );</script>";
+
         if($curr_usr_dept == $hrdCode) {
             $isAdmin = 1;
             $data['case_dept_list'] = $this->dropdown($this->disc_mdl->getCsDept($hrd, $hrd2, $isAdmin), 'DM_DEPT_CODE', 'DM_DEPT_CODE_DESC', ' ---All department--- ');
@@ -108,13 +110,17 @@ class Disciplinary extends MY_Controller
             $data['case_dept_list'] = $this->dropdown($this->disc_mdl->getCsDept($hrd, $hrd2, $isAdmin), 'DM_DEPT_CODE', 'DM_DEPT_CODE_DESC', '');
             $data['curr_dept'] = $curr_usr_dept;
         }
+
+        echo "<script>console.log('Debug Objects: " . $hrdCode . "' );</script>";
+
+        echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
         
         $data['curr_date'] = $this->disc_mdl->getCurDate();
         $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
 
-        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsYear(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', ' All');
+        $data['case_year_list'] = $this->dropdown($this->disc_mdl->getCsYear2(), 'DCM_CASE_YEAR', 'DCM_CASE_YEAR', 'All');
 
-        $data['sts_list'] = $this->dropdown($this->disc_mdl->getCaseStatusList2(), 'SM_STATUS_CODE', 'SM_STATUS_CODE_DESC', ' All');
+        $data['sts_list'] = $this->dropdown($this->disc_mdl->getCaseStatusList2(), 'SM_STATUS_CODE', 'SM_STATUS_CODE_DESC', 'All');
 
         $data['case_type'] = array(''=>'All', 'DISCIPLINARY'=>'Disciplinary', 'ABSENCE'=>'Absence', 'ASSET_LOSS'=>'Asset Loss', 'INQUIRY_SHOWCAUSE'=>'Inquiry');
 

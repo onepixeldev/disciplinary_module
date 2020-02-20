@@ -2100,12 +2100,18 @@ class Disciplinary_model extends MY_Model
     // CASE YEAR LIST
     public function getCsYear()
     {
-        $this->db->select("DCM_CASE_YEAR");
-        $this->db->from("DISC_CASE_MAIN");
-        $this->db->group_by("DCM_CASE_YEAR");
-        $this->db->order_by("DCM_CASE_YEAR DESC");
+        // $this->db->select("DCM_CASE_YEAR");
+        // $this->db->from("DISC_CASE_MAIN");
+        // $this->db->group_by("DCM_CASE_YEAR");
+        // $this->db->order_by("DCM_CASE_YEAR DESC");
 
-        $q = $this->db->get();
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
         
         return $q->result();
     }
@@ -2308,6 +2314,25 @@ class Disciplinary_model extends MY_Model
        CASE STATISTIC QUERY - AFF009
     =============================================================*/
 
+    // CASE YEAR LIST
+    public function getCsYear2()
+    {
+        // $this->db->select("DCM_CASE_YEAR");
+        // $this->db->from("DISC_CASE_MAIN");
+        // $this->db->group_by("DCM_CASE_YEAR");
+        // $this->db->order_by("DCM_CASE_YEAR DESC");
+
+        $q = $this->db->query("SELECT TO_CHAR(SYSDATE, 'YYYY') AS DCM_CASE_YEAR
+        FROM DUAL
+        UNION
+        SELECT DCM_CASE_YEAR
+        FROM DISC_CASE_MAIN
+        GROUP BY DCM_CASE_YEAR
+        ORDER BY DCM_CASE_YEAR DESC");
+        
+        return $q->result();
+    }
+
     // CASE STATISTIC LIST 
     public function getCaseStatList($year_f, $case_dept_f, $case_type_f, $case_sts_f)
     {
@@ -2380,8 +2405,12 @@ class Disciplinary_model extends MY_Model
             $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$usn')");
             $this->db->where("DM_STATUS = 'ACTIVE'");
             $this->db->where("DM_LEVEL <= 2");
-            $this->db->where("((SM_DEPT_CODE = '$hrd' OR SM_DEPT_CODE <> '$hrd' AND DM_DEPT_CODE = SM_DEPT_CODE)
-            OR (SM_DEPT_CODE = '$hrd2' OR SM_DEPT_CODE <> '$hrd2' AND DM_DEPT_CODE = SM_DEPT_CODE))");
+
+            // WHERE BG / BSM
+            // $this->db->where("((SM_DEPT_CODE = '$hrd' OR SM_DEPT_CODE <> '$hrd' AND DM_DEPT_CODE = SM_DEPT_CODE)
+            // OR (SM_DEPT_CODE = '$hrd2' OR SM_DEPT_CODE <> '$hrd2' AND DM_DEPT_CODE = SM_DEPT_CODE))");
+
+
             $this->db->order_by("DM_DEPT_CODE");
         } elseif ($isAdmin == 0) {
             $this->db->where("UPPER(SM_APPS_USERNAME) = UPPER('$usn')");
