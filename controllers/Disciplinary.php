@@ -104,7 +104,7 @@ class Disciplinary extends MY_Controller
         if($curr_usr_dept == $hrdCode) {
             $isAdmin = 1;
             $data['case_dept_list'] = $this->dropdown($this->disc_mdl->getCsDept($hrd, $hrd2, $isAdmin), 'DM_DEPT_CODE', 'DM_DEPT_CODE_DESC', ' ---All department--- ');
-            $data['curr_dept'] = 'BG';
+            $data['curr_dept'] = '';
         } else {
             $isAdmin = 0;
             $data['case_dept_list'] = $this->dropdown($this->disc_mdl->getCsDept($hrd, $hrd2, $isAdmin), 'DM_DEPT_CODE', 'DM_DEPT_CODE_DESC', '');
