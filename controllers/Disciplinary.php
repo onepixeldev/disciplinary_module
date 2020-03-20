@@ -99,7 +99,7 @@ class Disciplinary extends MY_Controller
         $curr_usr_dept = $curr_usr_dept->SM_DEPT_CODE;
         $data['curr_dept'] = '';
 
-        echo "<script>console.log('Debug Objects: " . $curr_usr_dept . "' );</script>";
+        // echo "<script>console.log('Debug Objects: " . $curr_usr_dept . "' );</script>";
 
         if($curr_usr_dept == $hrdCode) {
             $isAdmin = 1;
@@ -111,9 +111,9 @@ class Disciplinary extends MY_Controller
             $data['curr_dept'] = $curr_usr_dept;
         }
 
-        echo "<script>console.log('Debug Objects: " . $hrdCode . "' );</script>";
+        // echo "<script>console.log('Debug Objects: " . $hrdCode . "' );</script>";
 
-        echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
+        // echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
         
         $data['curr_date'] = $this->disc_mdl->getCurDate();
         $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
