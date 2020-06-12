@@ -2341,5 +2341,28 @@ class Disciplinary extends MY_Controller
         $this->render($data);
     }
 
-
+    /////////////////////////////////////////////////
+    // UPDATE STATUS PROGRESS AFF015 (12/06/2020)
+    /////////////////////////////////////////////////
+    public function saveUpdStsProg() 
+    {
+		$this->isAjax();
+        
+        $case_id = $this->input->post('case_id', true);
+        $dcp_seq = $this->input->post('dcp_seq', true);
+        $sts_date = $this->input->post('sts_date', true);
+        
+        if (!empty($case_id) && !empty($dcp_seq) && !empty($sts_date)) {
+            $update = $this->disc_mdl->saveUpdStsProg($case_id, $dcp_seq, $sts_date);
+    
+            if ($update > 0) {
+                $json = array('sts' => 1, 'msg' => 'Record has been saved', 'alert' => 'success');
+            } else {
+                $json = array('sts' => 0, 'msg' => 'Fail to save record', 'alert' => 'danger');
+            }
+        } else {
+            $json = array('sts' => 0, 'msg' => 'Status Date cannot be empty', 'alert' => 'danger');
+        }
+        echo json_encode($json);
+    }
 }

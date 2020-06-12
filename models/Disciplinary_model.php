@@ -2638,4 +2638,25 @@ class Disciplinary_model extends MY_Model
         
         return $q->result();
     }
+
+
+    /////////////////////////////////////////////////
+    // UPDATE STATUS PROGRESS AFF015 (12/06/2020)
+    /////////////////////////////////////////////////
+    public function saveUpdStsProg($case_id, $dcp_seq, $sts_date) 
+    {
+        // var_dump($case_id);
+        // var_dump($dcp_seq);
+        // var_dump($sts_date);
+
+        if(!empty($sts_date)) {
+            $date = "TO_DATE('".$sts_date."', 'DD/MM/YYYY')";
+            $this->db->set("DCP_STATUS_DATE", $date, false);
+        }
+
+        $this->db->where("DCP_CASE_ID", $case_id);
+        $this->db->where("DCP_SEQ", $dcp_seq);
+
+        return $this->db->update("DISC_CASE_PROGRESS");
+    }
 }
