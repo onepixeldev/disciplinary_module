@@ -99,7 +99,7 @@ class Disciplinary extends MY_Controller
         $curr_usr_dept = $curr_usr_dept->SM_DEPT_CODE;
         $data['curr_dept'] = '';
 
-        // echo "<script>console.log('Debug Objects: " . $curr_usr_dept . "' );</script>";
+        echo "<script>console.log('Debug Objects: " . $curr_usr_dept . "' );</script>";
 
         if($curr_usr_dept == $hrdCode) {
             $isAdmin = 1;
@@ -111,9 +111,9 @@ class Disciplinary extends MY_Controller
             $data['curr_dept'] = $curr_usr_dept;
         }
 
-        // echo "<script>console.log('Debug Objects: " . $hrdCode . "' );</script>";
+        echo "<script>console.log('Debug Objects: " . $hrdCode . "' );</script>";
 
-        // echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
+        echo "<script>console.log('Debug Objects: " . $isAdmin . "' );</script>";
         
         $data['curr_date'] = $this->disc_mdl->getCurDate();
         $data['curr_year'] = $data['curr_date']->SYSDATE_YYYY;
@@ -178,78 +178,106 @@ class Disciplinary extends MY_Controller
     // SET REPORT PARAM
     public function setRepParam() 
     {
-		$this->isAjax();
-		
-		$repCode = $this->input->post('repCode', true);
-        $param = '';
-		
-		if ($repCode == 'AFR010') {
-			$case_id = $this->input->post('case_id', true);
-			$sid = $this->input->post('sid', true);
-            $repFormat = 'PDF';
+        $this->isAjax();
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','CASE_ID'=>$case_id,'STAFF_ID'=>$sid));
-        }
-        else if ($repCode == 'AFR006') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        $repCode = $this->input->post('repCode', true);
+          $param = '';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-        else if ($repCode == 'AFR007') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        if ($repCode == 'AFR010') {
+        	$case_id = $this->input->post('case_id', true);
+        	$sid = $this->input->post('sid', true);
+              $repFormat = 'PDF';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-        else if ($repCode == 'AFR008') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','CASE_ID'=>$case_id,'STAFF_ID'=>$sid));
+          }
+          else if ($repCode == 'AFR006') {
+              $case_sts = $this->input->post('case_sts', true);
+        	$year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-        else if ($repCode == 'AFR009') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+          else if ($repCode == 'AFR007') {
+              $case_sts = $this->input->post('case_sts', true);
+        	$year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-        else if ($repCode == 'AFR001') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+          else if ($repCode == 'AFR008') {
+              $case_sts = $this->input->post('case_sts', true);
+        	$year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-        else if ($repCode == 'AFR002') {
-            $case_sts = $this->input->post('case_sts', true);
-			$year_frm = $this->input->post('year_frm', true);
-            $year_to = $this->input->post('year_to', true);
-            $repFormat = 'PDF';
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+          else if ($repCode == 'AFR009') {
+              $case_sts = $this->input->post('case_sts', true);
+        	$year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
 
-			$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
-        } 
-		
-		$json = array('report' => $param);
-		
-		echo json_encode($json);		
-    } 
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+          else if ($repCode == 'AFR001') {
+              $case_sts = $this->input->post('case_sts', true);
+        	   $year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
+
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+          else if ($repCode == 'AFR002') {
+              $case_sts = $this->input->post('case_sts', true);
+        	   $year_frm = $this->input->post('year_frm', true);
+              $year_to = $this->input->post('year_to', true);
+              $repFormat = 'PDF';
+
+        	$param = $this->encryption->encrypt_array(array('REPORT'=>$repCode,'FORMAT'=>$repFormat,'PARAMFORM' => 'NO','P_STATUS'=>$case_sts,'P_YEAR_FROM'=>$year_frm,'P_YEAR_TO'=>$year_to));
+          } 
+
+        $json = array('report' => $param);
+
+        echo json_encode($json);		
+    } // report 
+
+
     
-    // GENERATE REPORT
+    //GENERATE REPORT
+  //   public function report()
+  //   {
+		// $report = $this->encryption->decrypt_array($this->input->get('r'));
+		// $this->lib->generate_report($report, false);
+  //   } //IMS Report
+
     public function report()
     {
-		$report = $this->encryption->decrypt_array($this->input->get('r'));
-		$this->lib->generate_report($report, false);
-    }
+        ini_set('max_execution_time',0);
+        ini_set('memory_limit','2048M');
+        $this->load->library('jasperreport');
+
+        $report = $this->encryption->decrypt_array($this->input->get('r'));
+        //var_dump($report['REPORT'],$report); exit();
+
+        if($report['REPORT']=='AFR010'){
+            $param2  = array(
+                'CASE_ID'    => $report['CASE_ID'],
+                'STAFF_ID'   => $report['STAFF_ID']
+            ); 
+            $this->jasperreport->runReport("/Reports/MyHRIS/HRA_AF/" . $report['REPORT'], "pdf", $param2); 
+
+        }else{   
+            $param  = array(
+                'p_status'      => $report['P_STATUS'],
+                'p_year_from'   => $report['P_YEAR_FROM'],
+                'p_year_to'     => $report['P_YEAR_TO']
+            ); 
+            $this->jasperreport->runReport("/Reports/MyHRIS/HRA_AF/" . $report['REPORT'], "pdf", $param); 
+        }
+    } // Jasper Report
 
     /*===========================================================
        CASE REPORT ENTRY (DISCIPLINARY) - AFF016

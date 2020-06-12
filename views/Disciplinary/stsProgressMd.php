@@ -22,7 +22,9 @@
                             echo '
                             <tr>
                                 <td class="text-center">' . $sp->DCP_SEQ . '</td>
-                                <td class="text-center">' . $sp->DCP_STATUS_DATE2 . '</td>
+                                <td class="text-left">
+                                    <input name="form[status_date]" placeholder="DD/MM/YYYY" value="'.$sp->DCP_STATUS_DATE2.'" class="form-control dtPicker" type="text">
+                                </td>
                                 <td class="text-center">' . $sp->DCP_STATUS . '</td>
                                 <td class="text-left">' . $sp->DCP_NOTES . '</td>
                             </tr>
@@ -40,3 +42,12 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-hand-o-left"></i> Close</button>
 </div>
+
+<script>
+	$(document).ready(function(){
+        $('.dtPicker').datepicker({
+            format: 'DD/MM/YYYY'
+            // inline: true
+        });
+	});
+</script>

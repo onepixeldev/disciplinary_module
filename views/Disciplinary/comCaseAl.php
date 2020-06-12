@@ -30,26 +30,18 @@
 		</thead>
 		<tbody>
 		<?php
-			if (!empty($com_list)) {
-				foreach ($com_list as $cl) {
-					echo '
-                    <tr>
-                        <td class="text-center seq">'.$cl->DCC_SEQ.'</td>
-                        <td class="text-center sid">'.$cl->DCC_COMMITTEE_ID.'</td>
-                        <td class="text-left sname">'.$cl->SM_STAFF_NAME.'</td>
-                        <td class="text-center">'.$cl->SM_DEPT_CODE.'</td>
-						<td class="text-center">
-                            <button type="button" class="btn btn-danger text-left btn-xs del_cmm" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
-						</td>
-					</tr>
-                    ';
-				}
-			} else {
+            foreach ($com_list as $cl) {
                 echo '
-                    <tr>
-                        <td class="text-center" colspan="5">No record found.</td>
-					</tr>
-                    ';
+                <tr>
+                    <td class="text-center seq">'.$cl->DCC_SEQ.'</td>
+                    <td class="text-center sid">'.$cl->DCC_COMMITTEE_ID.'</td>
+                    <td class="text-left sname">'.$cl->SM_STAFF_NAME.'</td>
+                    <td class="text-center">'.$cl->SM_DEPT_CODE.'</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger text-left btn-xs del_cmm" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                ';
             }
 		?>
 		</tbody>

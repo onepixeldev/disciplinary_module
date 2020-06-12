@@ -32,29 +32,21 @@
 		</thead>
 		<tbody>
 		<?php
-			if (!empty($sp_list_iq)) {
-				foreach ($sp_list_iq as $siq) {
-					echo '
-                    <tr>
-                        <td class="text-center sid">'.$siq->DCS_STAFF_ID.'</td>
-                        <td class="text-left sname">'.$siq->SM_STAFF_NAME.'</td>
-                        <td class="text-center">'.$siq->DCS_DEPT.' - '.$siq->DM_DEPT_DESC.'</td>
-                        <td class="text-center">'.$siq->DCS_JOBCODE.' - '.$siq->SS_SERVICE_DESC.'</td>
-                        <td class="text-center">'.$siq->DCS_GROUP_SERVICE.' - '.$siq->DGS_GROUP_DESC.'</td>
-                        <td class="text-center">'.$siq->DCS_GUILTY_DESC.'</td>
-						<td class="text-center">
-                            <button type="button" class="btn btn-danger text-left btn-xs del_sp_iq" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
-						</td>
-					</tr>
-                    ';
-				}
-			} else {
+            foreach ($sp_list_iq as $siq) {
                 echo '
-                    <tr>
-                        <td class="text-center" colspan="7">No record found.</td>
-					</tr>
-                    ';
-            } 
+                <tr>
+                    <td class="text-center sid">'.$siq->DCS_STAFF_ID.'</td>
+                    <td class="text-left sname">'.$siq->SM_STAFF_NAME.'</td>
+                    <td class="text-center">'.$siq->DCS_DEPT.' - '.$siq->DM_DEPT_DESC.'</td>
+                    <td class="text-center">'.$siq->DCS_JOBCODE.' - '.$siq->SS_SERVICE_DESC.'</td>
+                    <td class="text-center">'.$siq->DCS_GROUP_SERVICE.' - '.$siq->DGS_GROUP_DESC.'</td>
+                    <td class="text-center">'.$siq->DCS_GUILTY_DESC.'</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger text-left btn-xs del_sp_iq" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                ';
+            }
 		?>
 		</tbody>
 		</table>	

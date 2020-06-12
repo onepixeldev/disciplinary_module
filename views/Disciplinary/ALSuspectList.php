@@ -31,28 +31,20 @@
 		</thead>
 		<tbody>
 		<?php
-			if (!empty($sp_list)) {
-				foreach ($sp_list as $spl) {
-					echo '
-                    <tr>
-                        <td class="text-center sid">'.$spl->DCS_STAFF_ID.'</td>
-                        <td class="text-left sname">'.$spl->SM_STAFF_NAME.'</td>
-                        <td class="text-center">'.$spl->DCS_DEPT.' - '.$spl->DM_DEPT_DESC.'</td>
-                        <td class="text-center">'.$spl->DCS_JOBCODE.' - '.$spl->SS_SERVICE_DESC.'</td>
-                        <td class="text-center">'.$spl->DCS_GUILTY_DESC.'</td>
-						<td class="text-center">
-                            <button type="button" class="btn btn-danger text-left btn-xs del_sp" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
-						</td>
-					</tr>
-                    ';
-				}
-			} else {
+            foreach ($sp_list as $spl) {
                 echo '
-                    <tr>
-                        <td class="text-center" colspan="6">No record found.</td>
-					</tr>
-                    ';
-            } 
+                <tr>
+                    <td class="text-center sid">'.$spl->DCS_STAFF_ID.'</td>
+                    <td class="text-left sname">'.$spl->SM_STAFF_NAME.'</td>
+                    <td class="text-center">'.$spl->DCS_DEPT.' - '.$spl->DM_DEPT_DESC.'</td>
+                    <td class="text-center">'.$spl->DCS_JOBCODE.' - '.$spl->SS_SERVICE_DESC.'</td>
+                    <td class="text-center">'.$spl->DCS_GUILTY_DESC.'</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger text-left btn-xs del_sp" value="'.$case_id.'"><i class="fa fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                ';
+            }
 		?>
 		</tbody>
 		</table>	
