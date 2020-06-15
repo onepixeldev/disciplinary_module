@@ -9,15 +9,15 @@
 <div class="modal-body">
     <p>
         <div class="well">
-            <div class="row table-condensed table-responsive">
+            <div class="row table-condensed">
                 <table class="table table-bordered table-hover" id="tbl_sts_list">
                 <thead>
                 <tr>
                     <th class="text-center col-md-1 hidden">CaseID.</th>
                     <th class="text-center col-md-1">No.</th>
                     <th class="text-center col-md-1">Status Date</th>
-                    <th class="text-center col-md-3">Status</th>
-                    <th class="text-center">Status Detail</th>
+                    <th class="text-center col-md-2">Status</th>
+                    <th class="text-center col-md-3">Status Detail</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -26,13 +26,13 @@
                         foreach ($sts_prog as $sp) {
                             echo '
                             <tr>
-                                <td class="text-left hidden">' . $sp->DCP_CASE_ID . '</td>
-                                <td class="text-center">' . $sp->DCP_SEQ . '</td>
-                                <td class="text-left">
-                                    <input name="form[status_date]" placeholder="DD/MM/YYYY" value="'.$sp->DCP_STATUS_DATE2.'" class="form-control dtPickerMd" type="text">
+                                <td class="text-left col-md-1 hidden">' . $sp->DCP_CASE_ID . '</td>
+                                <td class="text-center col-md-1">' . $sp->DCP_SEQ . '</td>
+                                <td class="text-center col-md-1">
+                                    <input name="form[status_date]" placeholder="DD/MM/YYYY" value="'.$sp->DCP_STATUS_DATE2.'" class="form-control dtPickerMd" type="text" style="text-align:center;">
                                 </td>
-                                <td class="text-center">' . $sp->DCP_STATUS . '</td>
-                                <td class="text-left">' . $sp->DCP_NOTES . '</td>
+                                <td class="text-center col-md-2">' . $sp->DCP_STATUS . '</td>
+                                <td class="text-left col-md-3">' . $sp->DCP_NOTES . '</td>
                             </tr>
                             ';
                         }
